@@ -30,7 +30,7 @@ function main() {
                     reps.meshes[0].primitives[0].indices.value)
 
                 gameEngine.initBuffers()
-                const firstO: GameObject = new GameObject([-0, 0, 0], gameEngine.meshList[reps.meshes[0].name])
+                const firstO: GameObject = new GameObject([0, 0, 0], gameEngine.meshList[reps.meshes[0].name])
                 firstO.texture = texture
                 gameEngine.scene.push(firstO)
 

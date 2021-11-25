@@ -2,6 +2,7 @@ import { getFileContent, createWhiteTexture } from './util';
 import { Mesh } from './mesh';
 import { GameObject } from './gameObject';
 import { Buffers } from './buffers';
+import { Camera } from './camera';
 
 import { vec3, mat4 } from 'gl-matrix';
 
@@ -37,6 +38,7 @@ export class GameEngine {
             return;
         }
 
+        // We want empty (white) texture. Because shader is expecting one
         this.emptyTexture = createWhiteTexture(this.gl)
 
         // //plane
@@ -228,7 +230,7 @@ export class GameEngine {
             zNear,
             zFar);
 
-        mat4.translate(projectionMatrix, projectionMatrix, [0, 0, -5])
+        mat4.translate(projectionMatrix, projectionMatrix, Camera.camera.transform.position)
         // Orthographic
         // mat4.ortho(projectionMatrix, this.canvas.width, -this.canvas.width, this.canvas.height, -this.canvas.height, 0.1, 100);
         // mat4.scale(projectionMatrix, projectionMatrix, [this.cameraScale, this.cameraScale, 1])

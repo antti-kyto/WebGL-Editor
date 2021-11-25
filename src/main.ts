@@ -7,6 +7,8 @@ import { load } from '@loaders.gl/core';
 import { GLTFLoader } from '@loaders.gl/gltf';
 
 import { loadTexture } from './util'
+import { Camera } from './camera';
+import { FreeLook } from './freelook';
 
 const cameraScale: number = -100
 let then: number = 0
@@ -17,7 +19,13 @@ function main() {
         const gameEngine: GameEngine = new GameEngine(500, 500, cameraScale);
         gameEngine.clearCanvas();
 
-        load("./models/cube.glb", GLTFLoader)
+        const camera: GameObject = new GameObject([0,0,-9]);
+        camera.addComponent(Camera);
+        camera.addComponent(FreeLook);
+        Camera.camera = camera;
+        // gameEngine.scene.push(camera);
+
+        load("./models/head6.glb", GLTFLoader)
             .then((reps) => {
 
                 const texture: any = loadTexture(gameEngine.gl, './textures/tile.jpg')
@@ -48,7 +56,7 @@ function update(gameEngine: GameEngine, time: number) {
     then = time;
 
     gameEngine.scene.forEach(gameObject => {
-        gameObject.transform.rotate([deltaTime*1, deltaTime, 0])
+        // gameObject.transform.rotate([deltaTime*1, deltaTime, 0])
         gameObject.components.forEach(component => {
             component.update(deltaTime)
         })

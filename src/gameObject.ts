@@ -15,7 +15,7 @@ export class GameObject {
     transform: Transform = new Transform()
     mesh: Mesh | null = null
 
-    constructor(position: vec3, mesh: Mesh) {
+    constructor(position: vec3, mesh: Mesh = null) {
         this.transform = new Transform(position)
         this.mesh = mesh
     }

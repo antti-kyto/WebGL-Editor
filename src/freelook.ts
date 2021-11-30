@@ -11,6 +11,8 @@ export class FreeLook extends Component {
     aDown: boolean = false
     sDown: boolean = false
     dDown: boolean = false
+    eDown: boolean = false
+    fDown: boolean = false
 
     isMoving = false;
     x: number = 0;
@@ -60,6 +62,12 @@ export class FreeLook extends Component {
         if (this.dDown) {
             vec3.add(moveDir, moveDir, cameraRight)
         }
+        if (this.eDown) {
+            vec3.add(moveDir, moveDir, [0,1,0])
+        }
+        if (this.fDown) {
+            vec3.add(moveDir, moveDir, [0,-1,0])
+        }
 
         vec3.normalize(moveDir, moveDir)
 
@@ -92,6 +100,12 @@ export class FreeLook extends Component {
             case "d":
                 this.dDown = true
                 break
+            case "e":
+                this.eDown = true
+                break
+            case "f":
+                this.fDown = true
+                break
         }
     }
 
@@ -109,6 +123,12 @@ export class FreeLook extends Component {
             case "d":
                 this.dDown = false
                 break
+            case "e":
+                this.eDown = false
+                break
+            case "f":
+                this.fDown = false
+                break
         }
     }
 
@@ -117,8 +137,8 @@ export class FreeLook extends Component {
             return
         }
 
-        const rotateX: number = (this.y - e.offsetY)*Time.deltaTime*0.01;
-        const rotateY: number = (this.x - e.offsetX)*Time.deltaTime*0.01;
+        const rotateX: number = (-e.movementY) * Time.deltaTime * 1;
+        const rotateY: number = (-e.movementX) * Time.deltaTime * 1;
 
         this.gameObject.transform.rotate([rotateX, rotateY, 0])
     }

@@ -80,8 +80,10 @@ export class GameEngine {
                 },
                 uniformLocations: {
                     projectionMatrix: this.gl.getUniformLocation(this.shaderProgram, 'uProjectionMatrix'),
-                    modelViewMatrix: this.gl.getUniformLocation(this.shaderProgram, 'uModelViewMatrix'),
+                    viewMatrix: this.gl.getUniformLocation(this.shaderProgram, 'uViewMatrix'),
+                    modelMatrix: this.gl.getUniformLocation(this.shaderProgram, 'uModelMatrix'),
                     normalMatrix: this.gl.getUniformLocation(this.shaderProgram, 'uNormalMatrix'),
+                    viewPos: this.gl.getUniformLocation(this.shaderProgram, 'uViewPos'),
                     uSampler: this.gl.getUniformLocation(this.shaderProgram, 'uSampler'),
                 },
             };
@@ -223,35 +225,29 @@ export class GameEngine {
         const zFar: number = 1000.0;
         const projectionMatrix: mat4 = mat4.create();
 
-        //Perspective
+        //Perspective. Create ProjectionMatrix
         mat4.perspective(projectionMatrix,
             fieldOfView,
             aspect,
             zNear,
             zFar);
 
-        // mat4.translate(projectionMatrix, projectionMatrix, Camera.camera.transform.position)
+        // Orthographic
+        // mat4.ortho(projectionMatrix, this.canvas.width, -this.canvas.width, this.canvas.height, -this.canvas.height, 0.1, 100);
+        // mat4.scale(projectionMatrix, projectionMatrix, [this.cameraScale, this.cameraScale, 1])
+
+        // Calculate View (Camera) matrix
         const cameraFront: vec3 = [0, 0, 0]
         cameraFront[0] = Math.sin(Camera.camera.transform.rotation[1]) * Math.cos(Camera.camera.transform.rotation[0]);
         cameraFront[1] = Math.sin(Camera.camera.transform.rotation[0]);
         cameraFront[2] = Math.cos(Camera.camera.transform.rotation[1]) * Math.cos(Camera.camera.transform.rotation[0]);
-
         vec3.normalize(cameraFront, cameraFront)
-
-        const cameraUp: vec3 = [0, 1, 0]
-
-        mat4.mul(
-            projectionMatrix,
-            projectionMatrix,
-            mat4.lookAt(
-                mat4.create(),
-                Camera.camera.transform.position,
-                vec3.add(vec3.create(), Camera.camera.transform.position, cameraFront),
-                cameraUp)
-        );
-        // Orthographic
-        // mat4.ortho(projectionMatrix, this.canvas.width, -this.canvas.width, this.canvas.height, -this.canvas.height, 0.1, 100);
-        // mat4.scale(projectionMatrix, projectionMatrix, [this.cameraScale, this.cameraScale, 1])
+        const viewMatrix: mat4 = mat4.create();
+        mat4.lookAt(
+            viewMatrix,
+            Camera.camera.transform.position,
+            vec3.add(vec3.create(), Camera.camera.transform.position, cameraFront),
+            [0, 1, 0])
 
         this.scene.forEach(element => {
 
@@ -260,19 +256,19 @@ export class GameEngine {
             }
 
             // Set the drawing position
-            const modelViewMatrix: mat4 = mat4.create();
-            mat4.translate(modelViewMatrix,
-                modelViewMatrix,
+            const modelMatrix: mat4 = mat4.create();
+            mat4.translate(modelMatrix,
+                modelMatrix,
                 element.transform.position);
 
-            mat4.scale(modelViewMatrix,
-                modelViewMatrix,
+            mat4.scale(modelMatrix,
+                modelMatrix,
                 element.transform.scale);
 
             const normalizedRot: vec3 = [0, 0, 0]
             vec3.normalize(normalizedRot, element.transform.rotation)
-            mat4.rotate(modelViewMatrix,
-                modelViewMatrix,
+            mat4.rotate(modelMatrix,
+                modelMatrix,
                 Math.abs(element.transform.rotation[0]) + Math.abs(element.transform.rotation[1]) + Math.abs(element.transform.rotation[2]),
                 [normalizedRot[0], normalizedRot[1], normalizedRot[2]])
 
@@ -356,12 +352,11 @@ export class GameEngine {
             // Bind the texture to texture unit 0
             // Tell the shader we bound the texture to texture unit 0
             this.gl.activeTexture(this.gl.TEXTURE0);
-            // this.gl.bindTexture(this.gl.TEXTURE_2D, this.emptyTexture);
             this.gl.bindTexture(this.gl.TEXTURE_2D, element.texture != null ? element.texture : this.emptyTexture);
             this.gl.uniform1i(this.programInfo.uniformLocations.uSampler, 0);
 
             const normalMatrix = mat4.create();
-            mat4.invert(normalMatrix, modelViewMatrix);
+            mat4.invert(normalMatrix, modelMatrix);
             mat4.transpose(normalMatrix, normalMatrix);
 
             // Set the shader uniforms
@@ -370,13 +365,20 @@ export class GameEngine {
                 false,
                 projectionMatrix);
             this.gl.uniformMatrix4fv(
-                this.programInfo.uniformLocations.modelViewMatrix,
+                this.programInfo.uniformLocations.viewMatrix,
                 false,
-                modelViewMatrix);
+                viewMatrix);
+            this.gl.uniformMatrix4fv(
+                this.programInfo.uniformLocations.modelMatrix,
+                false,
+                modelMatrix);
             this.gl.uniformMatrix4fv(
                 this.programInfo.uniformLocations.normalMatrix,
                 false,
                 normalMatrix);
+            this.gl.uniform3fv(
+                this.programInfo.uniformLocations.viewPos,
+                Camera.camera.transform.position);
 
             {
                 const offset: number = element.mesh.offset;

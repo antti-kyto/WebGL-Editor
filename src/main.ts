@@ -28,7 +28,7 @@ function main() {
         camera.transform.rotate([0,glMatrix.toRadian(0),0])
         gameEngine.scene.push(camera);
 
-        load("./models/cube.glb", GLTFLoader)
+        load("./models/sphere.glb", GLTFLoader)
             .then((reps) => {
 
                 const texture: any = loadTexture(gameEngine.gl, './textures/tile.jpg')

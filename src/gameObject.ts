@@ -21,7 +21,7 @@ export class GameObject {
     }
 
     addComponent(component: any): void {
-        this.components.push(component)
+        this.components.push(new component(this))
         return component
     }
 

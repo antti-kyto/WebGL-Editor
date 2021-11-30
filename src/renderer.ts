@@ -230,7 +230,25 @@ export class GameEngine {
             zNear,
             zFar);
 
-        mat4.translate(projectionMatrix, projectionMatrix, Camera.camera.transform.position)
+        // mat4.translate(projectionMatrix, projectionMatrix, Camera.camera.transform.position)
+        const cameraFront: vec3 = [0, 0, 0]
+        cameraFront[0] = Math.sin(Camera.camera.transform.rotation[1]) * Math.cos(Camera.camera.transform.rotation[0]);
+        cameraFront[1] = Math.sin(Camera.camera.transform.rotation[0]);
+        cameraFront[2] = Math.cos(Camera.camera.transform.rotation[1]) * Math.cos(Camera.camera.transform.rotation[0]);
+
+        vec3.normalize(cameraFront, cameraFront)
+
+        const cameraUp: vec3 = [0, 1, 0]
+
+        mat4.mul(
+            projectionMatrix,
+            projectionMatrix,
+            mat4.lookAt(
+                mat4.create(),
+                Camera.camera.transform.position,
+                vec3.add(vec3.create(), Camera.camera.transform.position, cameraFront),
+                cameraUp)
+        );
         // Orthographic
         // mat4.ortho(projectionMatrix, this.canvas.width, -this.canvas.width, this.canvas.height, -this.canvas.height, 0.1, 100);
         // mat4.scale(projectionMatrix, projectionMatrix, [this.cameraScale, this.cameraScale, 1])

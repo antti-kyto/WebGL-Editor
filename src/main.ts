@@ -9,6 +9,8 @@ import { GLTFLoader } from '@loaders.gl/gltf';
 import { loadTexture } from './util'
 import { Camera } from './camera';
 import { FreeLook } from './freelook';
+import { Time } from './time';
+import { glMatrix } from 'gl-matrix';
 
 const cameraScale: number = -100
 let then: number = 0
@@ -19,13 +21,14 @@ function main() {
         const gameEngine: GameEngine = new GameEngine(500, 500, cameraScale);
         gameEngine.clearCanvas();
 
-        const camera: GameObject = new GameObject([0,0,-9]);
+        const camera: GameObject = new GameObject([0,0,-10]);
         camera.addComponent(Camera);
         camera.addComponent(FreeLook);
         Camera.camera = camera;
-        // gameEngine.scene.push(camera);
+        camera.transform.rotate([0,glMatrix.toRadian(0),0])
+        gameEngine.scene.push(camera);
 
-        load("./models/head6.glb", GLTFLoader)
+        load("./models/cube.glb", GLTFLoader)
             .then((reps) => {
 
                 const texture: any = loadTexture(gameEngine.gl, './textures/tile.jpg')
@@ -39,6 +42,7 @@ function main() {
 
                 gameEngine.initBuffers()
                 const firstO: GameObject = new GameObject([0, 0, 0], gameEngine.meshList[reps.meshes[0].name])
+                firstO.transform.rotation = [0,glMatrix.toRadian(45),0]
                 firstO.texture = texture
                 gameEngine.scene.push(firstO)
 
@@ -52,13 +56,13 @@ function main() {
 function update(gameEngine: GameEngine, time: number) {
 
     time *= 0.001;  // convert to seconds
-    const deltaTime: number = time - then;
+    Time.deltaTime = time - then
     then = time;
 
     gameEngine.scene.forEach(gameObject => {
-        // gameObject.transform.rotate([deltaTime*1, deltaTime, 0])
+        // gameObject.transform.rotate([Time.deltaTime*1, 0, 0])
         gameObject.components.forEach(component => {
-            component.update(deltaTime)
+            component.update()
         })
     });
 

@@ -41,7 +41,7 @@ export function loadTexture(gl: any, url: string): any {
     const border: number = 0;
     const srcFormat: any = gl.RGBA;
     const srcType: any = gl.UNSIGNED_BYTE;
-    const pixel: Uint8Array = new Uint8Array([0, 0, 255, 255]);  // opaque blue
+    const pixel: Uint8Array = new Uint8Array([255, 0, 255, 255]);  // opaque blue
     gl.texImage2D(gl.TEXTURE_2D, level, internalFormat,
         width, height, border, srcFormat, srcType,
         pixel);

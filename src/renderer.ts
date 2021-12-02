@@ -1,4 +1,4 @@
-import { getFileContent, createWhiteTexture } from './util';
+import { getFileContent, createSolidTexture } from './util';
 import { Mesh } from './mesh';
 import { GameObject } from './gameObject';
 import { Buffers } from './buffers';
@@ -8,7 +8,7 @@ import { vec3, mat4 } from 'gl-matrix';
 
 export class GameEngine {
 
-    gl: any
+    static gl: any
     canvas: any
 
     readyToRender: boolean = false
@@ -30,16 +30,16 @@ export class GameEngine {
         this.canvas.height = canvasHeight;
         this.cameraScale = cameraScale
 
-        this.gl = this.canvas.getContext('webgl');
+        GameEngine.gl = this.canvas.getContext('webgl');
 
         // Only continue if WebGL is available and working
-        if (this.gl === null) {
+        if (GameEngine.gl === null) {
             alert('Unable to initialize WebGL. Your browser or machine may not support it.');
             return;
         }
 
         // We want empty (white) texture. Because shader is expecting one
-        this.emptyTexture = createWhiteTexture(this.gl)
+        this.emptyTexture = createSolidTexture(GameEngine.gl)
 
         // //plane
         this.costructBufferDatas(
@@ -69,25 +69,25 @@ export class GameEngine {
         const promiseFs: Promise<string> = getFileContent('../shaders/main.fs')
 
         Promise.all([promiseVs, promiseFs]).then((res: [string, string]) => {
-            this.shaderProgram = this.initShaderProgram(this.gl, res[0], res[1])
+            this.shaderProgram = this.initShaderProgram(GameEngine.gl, res[0], res[1])
             this.programInfo = {
                 program: this.shaderProgram,
                 attribLocations: {
-                    vertexPosition: this.gl.getAttribLocation(this.shaderProgram, 'aVertexPosition'),
-                    vertexNormal: this.gl.getAttribLocation(this.shaderProgram, 'aVertexNormal'),
-                    vertexColor: this.gl.getAttribLocation(this.shaderProgram, 'aVertexColor'),
-                    textureCoord: this.gl.getAttribLocation(this.shaderProgram, 'aTextureCoord'),
+                    vertexPosition: GameEngine.gl.getAttribLocation(this.shaderProgram, 'aVertexPosition'),
+                    vertexNormal: GameEngine.gl.getAttribLocation(this.shaderProgram, 'aVertexNormal'),
+                    vertexColor: GameEngine.gl.getAttribLocation(this.shaderProgram, 'aVertexColor'),
+                    textureCoord: GameEngine.gl.getAttribLocation(this.shaderProgram, 'aTextureCoord'),
                 },
                 uniformLocations: {
-                    projectionMatrix: this.gl.getUniformLocation(this.shaderProgram, 'uProjectionMatrix'),
-                    viewMatrix: this.gl.getUniformLocation(this.shaderProgram, 'uViewMatrix'),
-                    modelMatrix: this.gl.getUniformLocation(this.shaderProgram, 'uModelMatrix'),
-                    normalMatrix: this.gl.getUniformLocation(this.shaderProgram, 'uNormalMatrix'),
-                    viewPos: this.gl.getUniformLocation(this.shaderProgram, 'uViewPos'),
+                    projectionMatrix: GameEngine.gl.getUniformLocation(this.shaderProgram, 'uProjectionMatrix'),
+                    viewMatrix: GameEngine.gl.getUniformLocation(this.shaderProgram, 'uViewMatrix'),
+                    modelMatrix: GameEngine.gl.getUniformLocation(this.shaderProgram, 'uModelMatrix'),
+                    normalMatrix: GameEngine.gl.getUniformLocation(this.shaderProgram, 'uNormalMatrix'),
+                    viewPos: GameEngine.gl.getUniformLocation(this.shaderProgram, 'uViewPos'),
                     
-                    materialDiffuse: this.gl.getUniformLocation(this.shaderProgram, 'uMaterial.diffuse'),
-                    materialSpecular: this.gl.getUniformLocation(this.shaderProgram, 'uMaterial.specular'),
-                    materialShininess: this.gl.getUniformLocation(this.shaderProgram, 'uMaterial.shininess')
+                    materialDiffuse: GameEngine.gl.getUniformLocation(this.shaderProgram, 'uMaterial.diffuse'),
+                    materialSpecular: GameEngine.gl.getUniformLocation(this.shaderProgram, 'uMaterial.specular'),
+                    materialShininess: GameEngine.gl.getUniformLocation(this.shaderProgram, 'uMaterial.shininess')
                 },
             };
 
@@ -120,37 +120,37 @@ export class GameEngine {
         // Create a buffer for the square's positions.
         // Select the positionBuffer
         // Pass the list of positions into WebG
-        const positionBuffer: any = this.gl.createBuffer()
-        this.gl.bindBuffer(this.gl.ARRAY_BUFFER, positionBuffer)
-        this.gl.bufferData(this.gl.ARRAY_BUFFER,
+        const positionBuffer: any = GameEngine.gl.createBuffer()
+        GameEngine.gl.bindBuffer(GameEngine.gl.ARRAY_BUFFER, positionBuffer)
+        GameEngine.gl.bufferData(GameEngine.gl.ARRAY_BUFFER,
             new Float32Array(this.bufferDatas.position),
-            this.gl.STATIC_DRAW);
+            GameEngine.gl.STATIC_DRAW);
 
-        const normalBuffer = this.gl.createBuffer();
-        this.gl.bindBuffer(this.gl.ARRAY_BUFFER, normalBuffer);
-        this.gl.bufferData(this.gl.ARRAY_BUFFER, new Float32Array(this.bufferDatas.normal),
-            this.gl.STATIC_DRAW)
+        const normalBuffer = GameEngine.gl.createBuffer();
+        GameEngine.gl.bindBuffer(GameEngine.gl.ARRAY_BUFFER, normalBuffer);
+        GameEngine.gl.bufferData(GameEngine.gl.ARRAY_BUFFER, new Float32Array(this.bufferDatas.normal),
+            GameEngine.gl.STATIC_DRAW)
 
         // Create a buffer for the colors.
         // Select the textureCoordBuffer
         // Pass the list of textureCoordinates into WebG
-        const vertexColorBuffer: any = this.gl.createBuffer();
-        this.gl.bindBuffer(this.gl.ARRAY_BUFFER, vertexColorBuffer);
-        this.gl.bufferData(this.gl.ARRAY_BUFFER, new Float32Array(this.bufferDatas.vertexColors),
-            this.gl.STATIC_DRAW);
+        const vertexColorBuffer: any = GameEngine.gl.createBuffer();
+        GameEngine.gl.bindBuffer(GameEngine.gl.ARRAY_BUFFER, vertexColorBuffer);
+        GameEngine.gl.bufferData(GameEngine.gl.ARRAY_BUFFER, new Float32Array(this.bufferDatas.vertexColors),
+            GameEngine.gl.STATIC_DRAW);
 
         // Create a buffer for the textureCoordinates.
         // Select the textureCoordBuffer
         // Pass the list of textureCoordinates into WebG
-        const textureCoordBuffer: any = this.gl.createBuffer();
-        this.gl.bindBuffer(this.gl.ARRAY_BUFFER, textureCoordBuffer);
-        this.gl.bufferData(this.gl.ARRAY_BUFFER, new Float32Array(this.bufferDatas.textureCoord),
-            this.gl.STATIC_DRAW);
+        const textureCoordBuffer: any = GameEngine.gl.createBuffer();
+        GameEngine.gl.bindBuffer(GameEngine.gl.ARRAY_BUFFER, textureCoordBuffer);
+        GameEngine.gl.bufferData(GameEngine.gl.ARRAY_BUFFER, new Float32Array(this.bufferDatas.textureCoord),
+            GameEngine.gl.STATIC_DRAW);
 
-        const indexBuffer = this.gl.createBuffer();
-        this.gl.bindBuffer(this.gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
-        this.gl.bufferData(this.gl.ELEMENT_ARRAY_BUFFER,
-            new Uint16Array(this.bufferDatas.indices), this.gl.STATIC_DRAW);
+        const indexBuffer = GameEngine.gl.createBuffer();
+        GameEngine.gl.bindBuffer(GameEngine.gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
+        GameEngine.gl.bufferData(GameEngine.gl.ELEMENT_ARRAY_BUFFER,
+            new Uint16Array(this.bufferDatas.indices), GameEngine.gl.STATIC_DRAW);
 
         this.buffers.position = positionBuffer
         this.buffers.normal = normalBuffer
@@ -198,18 +198,18 @@ export class GameEngine {
     }
 
     clearCanvas() {
-        this.gl.clearColor(.15, .15, .15, 1.0);  // Clear to black, fully opaque
-        this.gl.clearDepth(1.0);                 // Clear everything
-        this.gl.enable(this.gl.DEPTH_TEST);           // Enable depth testing
-        this.gl.enable(this.gl.BLEND);
-        this.gl.blendFunc(this.gl.SRC_ALPHA, this.gl.ONE_MINUS_SRC_ALPHA);
-        this.gl.depthFunc(this.gl.LEQUAL);            // Near things obscure far things
+        GameEngine.gl.clearColor(.15, .15, .15, 1.0);  // Clear to black, fully opaque
+        GameEngine.gl.clearDepth(1.0);                 // Clear everything
+        GameEngine.gl.enable(GameEngine.gl.DEPTH_TEST);           // Enable depth testing
+        GameEngine.gl.enable(GameEngine.gl.BLEND);
+        GameEngine.gl.blendFunc(GameEngine.gl.SRC_ALPHA, GameEngine.gl.ONE_MINUS_SRC_ALPHA);
+        GameEngine.gl.depthFunc(GameEngine.gl.LEQUAL);            // Near things obscure far things
 
-        this.gl.enable(this.gl.CULL_FACE);
-        this.gl.cullFace(this.gl.BACK);
+        GameEngine.gl.enable(GameEngine.gl.CULL_FACE);
+        GameEngine.gl.cullFace(GameEngine.gl.BACK);
 
         // Clear the canvas before we start drawing on it.
-        this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
+        GameEngine.gl.clear(GameEngine.gl.COLOR_BUFFER_BIT | GameEngine.gl.DEPTH_BUFFER_BIT);
     }
 
     drawScene() {
@@ -223,7 +223,7 @@ export class GameEngine {
 
         // Create a perspective matrix
         const fieldOfView: number = 50 * Math.PI / 180;   // in radians
-        const aspect: number = this.gl.canvas.clientWidth / this.gl.canvas.clientHeight;
+        const aspect: number = GameEngine.gl.canvas.clientWidth / GameEngine.gl.canvas.clientHeight;
         const zNear: number = 0.1;
         const zFar: number = 1000.0;
         const projectionMatrix: mat4 = mat4.create();
@@ -278,19 +278,19 @@ export class GameEngine {
             // Tell WebGL how to pull out the positions from the position buffer
             {
                 const numComponents: number = 3;  // pull out 2 values per iteration
-                const type: any = this.gl.FLOAT;    // the data in the buffer is 32bit floats
+                const type: any = GameEngine.gl.FLOAT;    // the data in the buffer is 32bit floats
                 const normalize: boolean = false;  // don't normalize
                 const stride: number = 0;         // how many bytes to get from one set of values to the next
                 const offset: number = 0;         // how many bytes inside the buffer to start from
-                this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.buffers.position);
-                this.gl.vertexAttribPointer(
+                GameEngine.gl.bindBuffer(GameEngine.gl.ARRAY_BUFFER, this.buffers.position);
+                GameEngine.gl.vertexAttribPointer(
                     this.programInfo.attribLocations.vertexPosition,
                     numComponents,
                     type,
                     normalize,
                     stride,
                     offset);
-                this.gl.enableVertexAttribArray(
+                GameEngine.gl.enableVertexAttribArray(
                     this.programInfo.attribLocations.vertexPosition);
             }
 
@@ -298,103 +298,103 @@ export class GameEngine {
             // the normal buffer into the vertexNormal attribute.
             {
                 const numComponents = 3;
-                const type = this.gl.FLOAT;
+                const type = GameEngine.gl.FLOAT;
                 const normalize = false;
                 const stride = 0;
                 const offset = 0;
-                this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.buffers.normal);
-                this.gl.vertexAttribPointer(
+                GameEngine.gl.bindBuffer(GameEngine.gl.ARRAY_BUFFER, this.buffers.normal);
+                GameEngine.gl.vertexAttribPointer(
                     this.programInfo.attribLocations.vertexNormal,
                     numComponents,
                     type,
                     normalize,
                     stride,
                     offset);
-                this.gl.enableVertexAttribArray(
+                GameEngine.gl.enableVertexAttribArray(
                     this.programInfo.attribLocations.vertexNormal);
             }
 
             // Tell WebGL how to pull out the vertexColor from the vertexColor buffer
             {
                 const numComponents: number = 4;  // pull out 2 values per iteration
-                const type: any = this.gl.FLOAT;    // the data in the buffer is 32bit floats
+                const type: any = GameEngine.gl.FLOAT;    // the data in the buffer is 32bit floats
                 const normalize: boolean = false;  // don't normalize
                 const stride: number = 0;         // how many bytes to get from one set of values to the next
                 const offset: number = 0;         // how many bytes inside the buffer to start from
-                this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.buffers.vertexColors);
-                this.gl.vertexAttribPointer(
+                GameEngine.gl.bindBuffer(GameEngine.gl.ARRAY_BUFFER, this.buffers.vertexColors);
+                GameEngine.gl.vertexAttribPointer(
                     this.programInfo.attribLocations.vertexColor,
                     numComponents,
                     type,
                     normalize,
                     stride,
                     offset);
-                this.gl.enableVertexAttribArray(
+                GameEngine.gl.enableVertexAttribArray(
                     this.programInfo.attribLocations.vertexColor);
             }
 
             // tell webgl how to pull out the texture coordinates from buffer
             {
                 const num: number = 2; // every coordinate composed of 2 values
-                const type: any = this.gl.FLOAT; // the data in the buffer is 32 bit float
+                const type: any = GameEngine.gl.FLOAT; // the data in the buffer is 32 bit float
                 const normalize: boolean = false; // don't normalize
                 const stride: number = 0; // how many bytes to get from one set to the next
                 const offset: number = 0; // how many bytes inside the buffer to start from
-                this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.buffers.textureCoord);
-                this.gl.vertexAttribPointer(this.programInfo.attribLocations.textureCoord, num, type, normalize, stride, offset);
-                this.gl.enableVertexAttribArray(this.programInfo.attribLocations.textureCoord);
+                GameEngine.gl.bindBuffer(GameEngine.gl.ARRAY_BUFFER, this.buffers.textureCoord);
+                GameEngine.gl.vertexAttribPointer(this.programInfo.attribLocations.textureCoord, num, type, normalize, stride, offset);
+                GameEngine.gl.enableVertexAttribArray(this.programInfo.attribLocations.textureCoord);
             }
 
             // Tell WebGL which indices to use to index the vertices
-            this.gl.bindBuffer(this.gl.ELEMENT_ARRAY_BUFFER, this.buffers.indices);
+            GameEngine.gl.bindBuffer(GameEngine.gl.ELEMENT_ARRAY_BUFFER, this.buffers.indices);
 
             // Tell WebGL to use our program when drawing
-            this.gl.useProgram(this.programInfo.program);
+            GameEngine.gl.useProgram(this.programInfo.program);
 
             // Tell WebGL we want to affect texture unit 0
             // Bind the texture to texture unit 0
             // Tell the shader we bound the texture to texture unit 0
-            this.gl.uniform1i(this.programInfo.uniformLocations.materialDiffuse, 0);
-            this.gl.uniform1i(this.programInfo.uniformLocations.materialSpecular, 1);
+            GameEngine.gl.uniform1i(this.programInfo.uniformLocations.materialDiffuse, 0);
+            GameEngine.gl.uniform1i(this.programInfo.uniformLocations.materialSpecular, 1);
 
-            this.gl.activeTexture(this.gl.TEXTURE0);
-            this.gl.bindTexture(this.gl.TEXTURE_2D, element.texture != null ? element.texture : this.emptyTexture);
+            GameEngine.gl.activeTexture(GameEngine.gl.TEXTURE0);
+            GameEngine.gl.bindTexture(GameEngine.gl.TEXTURE_2D, element.material.diffuse);
 
-            this.gl.activeTexture(this.gl.TEXTURE1);
-            this.gl.bindTexture(this.gl.TEXTURE_2D, element.texture2 != null ? element.texture2 : this.emptyTexture);
+            GameEngine.gl.activeTexture(GameEngine.gl.TEXTURE1);
+            GameEngine.gl.bindTexture(GameEngine.gl.TEXTURE_2D, element.material.specular);
 
             const normalMatrix = mat4.create();
             mat4.invert(normalMatrix, modelMatrix);
             mat4.transpose(normalMatrix, normalMatrix);
 
             // Set the shader uniforms
-            this.gl.uniformMatrix4fv(
+            GameEngine.gl.uniformMatrix4fv(
                 this.programInfo.uniformLocations.projectionMatrix,
                 false,
                 projectionMatrix);
-            this.gl.uniformMatrix4fv(
+            GameEngine.gl.uniformMatrix4fv(
                 this.programInfo.uniformLocations.viewMatrix,
                 false,
                 viewMatrix);
-            this.gl.uniformMatrix4fv(
+            GameEngine.gl.uniformMatrix4fv(
                 this.programInfo.uniformLocations.modelMatrix,
                 false,
                 modelMatrix);
-            this.gl.uniformMatrix4fv(
+            GameEngine.gl.uniformMatrix4fv(
                 this.programInfo.uniformLocations.normalMatrix,
                 false,
                 normalMatrix);
-            this.gl.uniform3fv(
+            GameEngine.gl.uniform3fv(
                 this.programInfo.uniformLocations.viewPos,
                 Camera.camera.transform.position);
 
             // TODO MATERIALS CLASS
-            this.gl.uniform1f(this.programInfo.uniformLocations.materialShininess, 68.0);
+            GameEngine.gl.uniform1f(this.programInfo.uniformLocations.materialShininess, 68.0);
 
             {
                 const offset: number = element.mesh.offset;
                 const vertexCount: number = element.mesh.vertexCount;
-                this.gl.drawElements(this.gl.TRIANGLES, vertexCount, this.gl.UNSIGNED_SHORT, offset);
+                GameEngine.gl.drawElements(GameEngine.gl.TRIANGLES, vertexCount, GameEngine.gl.UNSIGNED_SHORT, offset);
             }
         });
     }

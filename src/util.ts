@@ -6,8 +6,8 @@ export function getFileContent(filePath: string): Promise<string> {
         })
 }
 
-export function createWhiteTexture(gl: any): any {
-    const texture: any = gl.createTexture();
+export function createSolidTexture(gl: any, color: Uint8Array = new Uint8Array([255, 255, 255, 255])): WebGLTexture {
+    const texture: WebGLTexture = gl.createTexture();
     gl.bindTexture(gl.TEXTURE_2D, texture);
 
     const level: number = 0;
@@ -17,7 +17,7 @@ export function createWhiteTexture(gl: any): any {
     const border: number = 0;
     const srcFormat: any = gl.RGBA;
     const srcType: any = gl.UNSIGNED_BYTE;
-    const pixel: Uint8Array = new Uint8Array([255, 255, 255, 255]);  // white
+    const pixel: Uint8Array = color;  // white
     gl.texImage2D(gl.TEXTURE_2D, level, internalFormat,
         width, height, border, srcFormat, srcType,
         pixel);
@@ -25,8 +25,8 @@ export function createWhiteTexture(gl: any): any {
     return texture;
 }
 
-export function loadTexture(gl: any, url: string): any {
-    const texture: any = gl.createTexture();
+export function loadTexture(gl: any, url: string): WebGLTexture {
+    const texture: WebGLTexture = gl.createTexture();
     gl.bindTexture(gl.TEXTURE_2D, texture);
 
     // Because images have to be downloaded over the internet

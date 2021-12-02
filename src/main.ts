@@ -11,6 +11,7 @@ import { Camera } from './camera';
 import { FreeLook } from './freelook';
 import { Time } from './time';
 import { glMatrix } from 'gl-matrix';
+import { Material } from './material';
 
 const cameraScale: number = -100
 let then: number = 0
@@ -31,8 +32,10 @@ function main() {
         load("./models/cube.glb", GLTFLoader)
             .then((reps) => {
 
-                const texture: any = loadTexture(gameEngine.gl, './textures/container.png')
-                const texture2: any = loadTexture(gameEngine.gl, './textures/containerSpecular.png')
+                const texture: any = loadTexture(GameEngine.gl, './textures/container.png')
+                const texture2: any = loadTexture(GameEngine.gl, './textures/containerSpecular.png')
+                const mat: Material = new Material(texture, texture2, 32)
+
                 gameEngine.costructBufferDatas(
                     reps.meshes[0].name,
                     reps.meshes[0].primitives[0].attributes.POSITION.value,
@@ -42,10 +45,8 @@ function main() {
                     reps.meshes[0].primitives[0].indices.value)
 
                 gameEngine.initBuffers()
-                const firstO: GameObject = new GameObject([0, 0, 0], gameEngine.meshList[reps.meshes[0].name])
+                const firstO: GameObject = new GameObject([0, 0, 0], gameEngine.meshList[reps.meshes[0].name], mat)
                 firstO.transform.rotation = [0,glMatrix.toRadian(45),0]
-                firstO.texture = texture
-                firstO.texture2 = texture2
                 gameEngine.scene.push(firstO)
 
                 requestAnimationFrame((time) => update(gameEngine, time));

@@ -84,7 +84,10 @@ export class GameEngine {
                     modelMatrix: this.gl.getUniformLocation(this.shaderProgram, 'uModelMatrix'),
                     normalMatrix: this.gl.getUniformLocation(this.shaderProgram, 'uNormalMatrix'),
                     viewPos: this.gl.getUniformLocation(this.shaderProgram, 'uViewPos'),
-                    uSampler: this.gl.getUniformLocation(this.shaderProgram, 'uSampler'),
+                    
+                    materialDiffuse: this.gl.getUniformLocation(this.shaderProgram, 'uMaterial.diffuse'),
+                    materialSpecular: this.gl.getUniformLocation(this.shaderProgram, 'uMaterial.specular'),
+                    materialShininess: this.gl.getUniformLocation(this.shaderProgram, 'uMaterial.shininess')
                 },
             };
 
@@ -195,7 +198,7 @@ export class GameEngine {
     }
 
     clearCanvas() {
-        this.gl.clearColor(0.9, 0.9, 0.9, 1.0);  // Clear to black, fully opaque
+        this.gl.clearColor(.15, .15, .15, 1.0);  // Clear to black, fully opaque
         this.gl.clearDepth(1.0);                 // Clear everything
         this.gl.enable(this.gl.DEPTH_TEST);           // Enable depth testing
         this.gl.enable(this.gl.BLEND);
@@ -351,9 +354,14 @@ export class GameEngine {
             // Tell WebGL we want to affect texture unit 0
             // Bind the texture to texture unit 0
             // Tell the shader we bound the texture to texture unit 0
+            this.gl.uniform1i(this.programInfo.uniformLocations.materialDiffuse, 0);
+            this.gl.uniform1i(this.programInfo.uniformLocations.materialSpecular, 1);
+
             this.gl.activeTexture(this.gl.TEXTURE0);
             this.gl.bindTexture(this.gl.TEXTURE_2D, element.texture != null ? element.texture : this.emptyTexture);
-            this.gl.uniform1i(this.programInfo.uniformLocations.uSampler, 0);
+
+            this.gl.activeTexture(this.gl.TEXTURE1);
+            this.gl.bindTexture(this.gl.TEXTURE_2D, element.texture2 != null ? element.texture2 : this.emptyTexture);
 
             const normalMatrix = mat4.create();
             mat4.invert(normalMatrix, modelMatrix);
@@ -379,6 +387,9 @@ export class GameEngine {
             this.gl.uniform3fv(
                 this.programInfo.uniformLocations.viewPos,
                 Camera.camera.transform.position);
+
+            // TODO MATERIALS CLASS
+            this.gl.uniform1f(this.programInfo.uniformLocations.materialShininess, 68.0);
 
             {
                 const offset: number = element.mesh.offset;

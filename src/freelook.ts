@@ -12,7 +12,7 @@ export class FreeLook extends Component {
     sDown: boolean = false
     dDown: boolean = false
     eDown: boolean = false
-    fDown: boolean = false
+    qDown: boolean = false
 
     isMoving = false;
     x: number = 0;
@@ -65,7 +65,7 @@ export class FreeLook extends Component {
         if (this.eDown) {
             vec3.add(moveDir, moveDir, [0,1,0])
         }
-        if (this.fDown) {
+        if (this.qDown) {
             vec3.add(moveDir, moveDir, [0,-1,0])
         }
 
@@ -103,8 +103,8 @@ export class FreeLook extends Component {
             case "e":
                 this.eDown = true
                 break
-            case "f":
-                this.fDown = true
+            case "q":
+                this.qDown = true
                 break
         }
     }
@@ -126,8 +126,8 @@ export class FreeLook extends Component {
             case "e":
                 this.eDown = false
                 break
-            case "f":
-                this.fDown = false
+            case "q":
+                this.qDown = false
                 break
         }
     }
@@ -137,8 +137,8 @@ export class FreeLook extends Component {
             return
         }
 
-        const rotateX: number = (-e.movementY) * Time.deltaTime * 1;
-        const rotateY: number = (-e.movementX) * Time.deltaTime * 1;
+        const rotateX: number = (-e.movementY) * Time.deltaTime * .3;
+        const rotateY: number = (-e.movementX) * Time.deltaTime * .3;
 
         this.gameObject.transform.rotate([rotateX, rotateY, 0])
     }

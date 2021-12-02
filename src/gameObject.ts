@@ -9,7 +9,8 @@ export class GameObject {
     parent: GameObject | null = null
     child: Array<GameObject> = []
     texture: any
-    
+    texture2: any
+
     components: Array<Component> = []
 
     transform: Transform = new Transform()

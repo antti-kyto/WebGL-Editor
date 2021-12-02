@@ -28,10 +28,11 @@ function main() {
         camera.transform.rotate([0,glMatrix.toRadian(0),0])
         gameEngine.scene.push(camera);
 
-        load("./models/sphere.glb", GLTFLoader)
+        load("./models/cube.glb", GLTFLoader)
             .then((reps) => {
 
-                const texture: any = loadTexture(gameEngine.gl, './textures/tile.jpg')
+                const texture: any = loadTexture(gameEngine.gl, './textures/container.png')
+                const texture2: any = loadTexture(gameEngine.gl, './textures/containerSpecular.png')
                 gameEngine.costructBufferDatas(
                     reps.meshes[0].name,
                     reps.meshes[0].primitives[0].attributes.POSITION.value,
@@ -44,6 +45,7 @@ function main() {
                 const firstO: GameObject = new GameObject([0, 0, 0], gameEngine.meshList[reps.meshes[0].name])
                 firstO.transform.rotation = [0,glMatrix.toRadian(45),0]
                 firstO.texture = texture
+                firstO.texture2 = texture2
                 gameEngine.scene.push(firstO)
 
                 requestAnimationFrame((time) => update(gameEngine, time));

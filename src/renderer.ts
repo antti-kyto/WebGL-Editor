@@ -84,10 +84,17 @@ export class GameEngine {
                     modelMatrix: GameEngine.gl.getUniformLocation(this.shaderProgram, 'uModelMatrix'),
                     normalMatrix: GameEngine.gl.getUniformLocation(this.shaderProgram, 'uNormalMatrix'),
                     viewPos: GameEngine.gl.getUniformLocation(this.shaderProgram, 'uViewPos'),
-                    
+                    numPointLights: GameEngine.gl.getUniformLocation(this.shaderProgram, 'vNumPointLights'),
+
                     materialDiffuse: GameEngine.gl.getUniformLocation(this.shaderProgram, 'uMaterial.diffuse'),
                     materialSpecular: GameEngine.gl.getUniformLocation(this.shaderProgram, 'uMaterial.specular'),
-                    materialShininess: GameEngine.gl.getUniformLocation(this.shaderProgram, 'uMaterial.shininess')
+                    materialShininess: GameEngine.gl.getUniformLocation(this.shaderProgram, 'uMaterial.shininess'),
+
+                    dirLightDirection: GameEngine.gl.getUniformLocation(this.shaderProgram, 'uDirLight.direction'),
+                    dirLightAmbient: GameEngine.gl.getUniformLocation(this.shaderProgram, 'uDirLight.ambient'),
+                    dirLightDiffuse: GameEngine.gl.getUniformLocation(this.shaderProgram, 'uDirLight.diffuse'),
+                    dirLightSpecular: GameEngine.gl.getUniformLocation(this.shaderProgram, 'uDirLight.specular')
+
                 },
             };
 
@@ -219,6 +226,47 @@ export class GameEngine {
             return
         }
 
+        // Tell WebGL to use our program when drawing
+        GameEngine.gl.useProgram(this.programInfo.program);
+
+        // THIS IS FOR POINT LIGHT
+        GameEngine.gl.uniform1i(
+            this.programInfo.uniformLocations.numPointLights,
+            2);
+        for (let i = 0; i < 2; i++) {
+            const position = GameEngine.gl.getUniformLocation(this.shaderProgram, `uPointLights[${i}].position`)
+            const constant = GameEngine.gl.getUniformLocation(this.shaderProgram, `uPointLights[${i}].constant`)
+            const linear = GameEngine.gl.getUniformLocation(this.shaderProgram, `uPointLights[${i}].linear`)
+            const quadratic = GameEngine.gl.getUniformLocation(this.shaderProgram, `uPointLights[${i}].quadratic`)
+            const ambient = GameEngine.gl.getUniformLocation(this.shaderProgram, `uPointLights[${i}].ambient`)
+            const diffuse = GameEngine.gl.getUniformLocation(this.shaderProgram, `uPointLights[${i}].diffuse`)
+            const specular = GameEngine.gl.getUniformLocation(this.shaderProgram, `uPointLights[${i}].specular`)
+
+            GameEngine.gl.uniform3fv(position, [0+(i*5), 2, 0]);
+
+            GameEngine.gl.uniform1f(constant, 1.0);
+            GameEngine.gl.uniform1f(linear, 0.045	);
+            GameEngine.gl.uniform1f(quadratic, 0.0075);
+
+            GameEngine.gl.uniform3fv(ambient, [.0, .0, .0]);
+            GameEngine.gl.uniform3fv(diffuse, [1-i, 0+i, 0]);
+            GameEngine.gl.uniform3fv(specular, [1-i, 0+i, 0]);
+        }
+
+        // Set Directional Lights
+        GameEngine.gl.uniform3fv(
+            this.programInfo.uniformLocations.dirLightDirection,
+            [0, 1, 0]);
+        GameEngine.gl.uniform3fv(
+            this.programInfo.uniformLocations.dirLightAmbient,
+            [.5, .5, .5]);
+        GameEngine.gl.uniform3fv(
+            this.programInfo.uniformLocations.dirLightDiffuse,
+            [0, 0, 0]);
+        GameEngine.gl.uniform3fv(
+            this.programInfo.uniformLocations.dirLightSpecular,
+            [.0,.0,.0]);
+
         this.clearCanvas()
 
         // Create a perspective matrix
@@ -347,9 +395,6 @@ export class GameEngine {
 
             // Tell WebGL which indices to use to index the vertices
             GameEngine.gl.bindBuffer(GameEngine.gl.ELEMENT_ARRAY_BUFFER, this.buffers.indices);
-
-            // Tell WebGL to use our program when drawing
-            GameEngine.gl.useProgram(this.programInfo.program);
 
             // Tell WebGL we want to affect texture unit 0
             // Bind the texture to texture unit 0

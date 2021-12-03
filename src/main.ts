@@ -46,8 +46,13 @@ function main() {
 
                 gameEngine.initBuffers()
                 const firstO: GameObject = new GameObject([0, 0, 0], gameEngine.meshList[reps.meshes[0].name], mat)
-                firstO.transform.rotation = [0,glMatrix.toRadian(45),0]
+                firstO.transform.rotation = [0,glMatrix.toRadian(0),0]
                 gameEngine.scene.push(firstO)
+
+                const sO: GameObject = new GameObject([0, 0, 0], gameEngine.meshList[reps.meshes[0].name], mat)
+                sO.transform.translate([4,0,0])
+                sO.transform.rotation = [glMatrix.toRadian(25),0,0]
+                gameEngine.scene.push(sO)
 
                 requestAnimationFrame((time) => update(gameEngine, time));
             });

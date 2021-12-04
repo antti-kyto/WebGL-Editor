@@ -9,8 +9,8 @@ export class Material {
 
     constructor(
         diffuse: WebGLTexture = createSolidTexture(GameEngine.gl),
-        specular: WebGLTexture = createSolidTexture(GameEngine.gl),
-        shininess: number = 0
+        specular: WebGLTexture = createSolidTexture(GameEngine.gl, new Uint8Array([0, 0, 0, 0])),
+        shininess: number = 32
     ) {
         this.diffuse = diffuse
         this.specular = specular

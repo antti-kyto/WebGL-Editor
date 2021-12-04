@@ -4,7 +4,7 @@ import { GameObject } from './gameObject';
 import { Buffers } from './buffers';
 import { Camera } from './camera';
 
-import { vec3, mat4 } from 'gl-matrix';
+import { vec3, mat4, quat } from 'gl-matrix';
 
 export class GameEngine {
 
@@ -45,21 +45,21 @@ export class GameEngine {
         this.costructBufferDatas(
             'plane',
             [
-                -1.0, -1.0, 0.0,
-                1.0, -1.0, 0.0,
-                1.0, 1.0, 0.0,
-                -1.0, 1.0, 0.0,
+                1.0, 0.0, -1.0,
+                -1.0, 0.0, -1.0,
+                -1.0, 0.0, 1.0,
+                1.0, 0.0, 1.0,
             ],
-            [0.0, 0.0, -1.0,
-                0.0, 0.0, -1.0,
-                0.0, 0.0, -1.0,
-                0.0, 0.0, -1.0,],
+            [0.0, 1.0, 0.0,
+                0.0, 1.0, 0.0,
+                0.0, 1.0, 0.0,
+                0.0, 1.0, 0.0,],
             [],
             [
+                1.0, 1.0,
+                0.0, 1.0,
                 0.0, 0.0,
                 1.0, 0.0,
-                0.0, 1.0,
-                1.0, 1.0,
             ],
             [0, 1, 2, 0, 2, 3]
         )
@@ -232,8 +232,8 @@ export class GameEngine {
         // THIS IS FOR POINT LIGHT
         GameEngine.gl.uniform1i(
             this.programInfo.uniformLocations.numPointLights,
-            2);
-        for (let i = 0; i < 2; i++) {
+            0);
+        for (let i = 0; i < 0; i++) {
             const position = GameEngine.gl.getUniformLocation(this.shaderProgram, `uPointLights[${i}].position`)
             const constant = GameEngine.gl.getUniformLocation(this.shaderProgram, `uPointLights[${i}].constant`)
             const linear = GameEngine.gl.getUniformLocation(this.shaderProgram, `uPointLights[${i}].linear`)
@@ -242,30 +242,30 @@ export class GameEngine {
             const diffuse = GameEngine.gl.getUniformLocation(this.shaderProgram, `uPointLights[${i}].diffuse`)
             const specular = GameEngine.gl.getUniformLocation(this.shaderProgram, `uPointLights[${i}].specular`)
 
-            GameEngine.gl.uniform3fv(position, [0+(i*5), 2, 0]);
+            GameEngine.gl.uniform3fv(position, [-5 + (i * 5), 2, 0]);
 
             GameEngine.gl.uniform1f(constant, 1.0);
-            GameEngine.gl.uniform1f(linear, 0.045	);
-            GameEngine.gl.uniform1f(quadratic, 0.0075);
+            GameEngine.gl.uniform1f(linear, 0.15);
+            GameEngine.gl.uniform1f(quadratic, 0.035);
 
             GameEngine.gl.uniform3fv(ambient, [.0, .0, .0]);
-            GameEngine.gl.uniform3fv(diffuse, [1-i, 0+i, 0]);
-            GameEngine.gl.uniform3fv(specular, [1-i, 0+i, 0]);
+            GameEngine.gl.uniform3fv(diffuse, [0 + i, 1, 0 + i]);
+            GameEngine.gl.uniform3fv(specular, [0 + i, 1, 0 + i]);
         }
 
         // Set Directional Lights
         GameEngine.gl.uniform3fv(
             this.programInfo.uniformLocations.dirLightDirection,
-            [0, 1, 0]);
+            [1, 1, -1]);
         GameEngine.gl.uniform3fv(
             this.programInfo.uniformLocations.dirLightAmbient,
-            [.5, .5, .5]);
+            [.51, .55, .58]);
         GameEngine.gl.uniform3fv(
             this.programInfo.uniformLocations.dirLightDiffuse,
-            [0, 0, 0]);
+            [0.99, 0.85, .65]);
         GameEngine.gl.uniform3fv(
             this.programInfo.uniformLocations.dirLightSpecular,
-            [.0,.0,.0]);
+            [.32, .3, .25]);
 
         this.clearCanvas()
 
@@ -308,20 +308,21 @@ export class GameEngine {
 
             // Set the drawing position
             const modelMatrix: mat4 = mat4.create();
-            mat4.translate(modelMatrix,
-                modelMatrix,
-                element.transform.position);
 
-            mat4.scale(modelMatrix,
-                modelMatrix,
-                element.transform.scale);
+            const translationMatrix: mat4 = mat4.create();
+            const rotationMatrix: mat4 = mat4.create();
+            const scaleMatrix: mat4 = mat4.create();
 
-            const normalizedRot: vec3 = [0, 0, 0]
-            vec3.normalize(normalizedRot, element.transform.rotation)
-            mat4.rotate(modelMatrix,
-                modelMatrix,
-                Math.abs(element.transform.rotation[0]) + Math.abs(element.transform.rotation[1]) + Math.abs(element.transform.rotation[2]),
-                [normalizedRot[0], normalizedRot[1], normalizedRot[2]])
+            const rotationQuaternion: quat = quat.create();
+            quat.fromEuler(rotationQuaternion, element.transform.rotation[0], element.transform.rotation[1], element.transform.rotation[2])
+
+            mat4.fromTranslation(translationMatrix, [element.transform.position[0], element.transform.position[1], element.transform.position[2]])
+            mat4.fromQuat(rotationMatrix, rotationQuaternion)
+            mat4.fromScaling(scaleMatrix, [element.transform.scale[0], element.transform.scale[1], element.transform.scale[2]])
+
+            // T*R*S = modelMatrix
+            mat4.mul(modelMatrix, translationMatrix, rotationMatrix)
+            mat4.mul(modelMatrix, modelMatrix, scaleMatrix)
 
             // Tell WebGL how to pull out the positions from the position buffer
             {
@@ -408,6 +409,9 @@ export class GameEngine {
             GameEngine.gl.activeTexture(GameEngine.gl.TEXTURE1);
             GameEngine.gl.bindTexture(GameEngine.gl.TEXTURE_2D, element.material.specular);
 
+            // TODO MATERIALS CLASS
+            GameEngine.gl.uniform1f(this.programInfo.uniformLocations.materialShininess, element.material.shininess);
+
             const normalMatrix = mat4.create();
             mat4.invert(normalMatrix, modelMatrix);
             mat4.transpose(normalMatrix, normalMatrix);
@@ -432,9 +436,6 @@ export class GameEngine {
             GameEngine.gl.uniform3fv(
                 this.programInfo.uniformLocations.viewPos,
                 Camera.camera.transform.position);
-
-            // TODO MATERIALS CLASS
-            GameEngine.gl.uniform1f(this.programInfo.uniformLocations.materialShininess, 68.0);
 
             {
                 const offset: number = element.mesh.offset;

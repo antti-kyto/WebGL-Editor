@@ -18,7 +18,7 @@ varying lowp vec3 vViewPos;
 void main(void) {
     gl_Position = uProjectionMatrix * uViewMatrix * uModelMatrix * aVertexPosition;
     vFragPos = vec3(uModelMatrix * aVertexPosition);
-    vNormal = mat3(uNormalMatrix) * aVertexNormal;
+    vNormal = normalize(mat3(uNormalMatrix) * aVertexNormal);
     vTextureCoord = aTextureCoord;
     vColor = aVertexColor;
     vViewPos = uViewPos;

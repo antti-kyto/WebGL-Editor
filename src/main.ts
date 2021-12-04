@@ -19,22 +19,63 @@ let then: number = 0
 // Start
 function main() {
     try {
-        const gameEngine: GameEngine = new GameEngine(500, 500, cameraScale);
+        const gameEngine: GameEngine = new GameEngine(900, 900, cameraScale);
         gameEngine.clearCanvas();
 
-        const camera: GameObject = new GameObject([0,0,-10]);
+        const camera: GameObject = new GameObject([0, 0, -10]);
         camera.addComponent(Camera);
         camera.addComponent(FreeLook);
         Camera.camera = camera;
-        camera.transform.rotate([0,glMatrix.toRadian(0),0])
+        camera.transform.rotate([0, glMatrix.toRadian(0), 0])
         gameEngine.scene.push(camera);
 
-        load("./models/cube.glb", GLTFLoader)
+        // Create ROOM
+        {
+            let sO: GameObject = new GameObject([0, 0, 0], gameEngine.meshList["plane"])
+            sO.transform.translate([0, 0, 10])
+            sO.transform.rotate([-90, 0, 0])
+            sO.transform.scale = [10, 1, 10]
+            gameEngine.scene.push(sO)
+
+            sO = new GameObject([0, 0, 0], gameEngine.meshList["plane"])
+            sO.transform.translate([-10, 0, 0])
+            sO.transform.rotate([90, 90, 0])
+            sO.transform.scale = [10, 1, 10]
+            gameEngine.scene.push(sO)
+
+            sO = new GameObject([0, 0, 0], gameEngine.meshList["plane"])
+            sO.transform.translate([10, 0, 0])
+            sO.transform.rotate([90, -90, 0])
+            sO.transform.scale = [10, 1, 10]
+            gameEngine.scene.push(sO)
+
+            sO = new GameObject([0, 0, 0], gameEngine.meshList["plane"])
+            sO.transform.translate([0, 0, -10])
+            sO.transform.rotation = [90, 0, 0]
+            sO.transform.scale = [10, 1, 10]
+            gameEngine.scene.push(sO)
+
+            sO = new GameObject([0, 0, 0], gameEngine.meshList["plane"])
+            sO.transform.translate([0, -10, 0])
+            sO.transform.rotation = [0, 0, 0]
+            sO.transform.scale = [10, 1, 10]
+            gameEngine.scene.push(sO)
+
+            sO = new GameObject([0, 0, 0], gameEngine.meshList["plane"])
+            sO.transform.translate([0, 10, 0])
+            sO.transform.rotation = [180, 0, 0]
+            sO.transform.scale = [10, 1, 10]
+            gameEngine.scene.push(sO)
+        }
+
+        load("./models/kannu.glb", GLTFLoader)
             .then((reps) => {
 
-                const texture: any = loadTexture(GameEngine.gl, './textures/container.png')
-                const texture2: any = loadTexture(GameEngine.gl, './textures/containerSpecular.png')
-                const mat: Material = new Material(texture, texture2, 32)
+                console.log(reps.meshes[0].primitives[0].attributes)
+
+                const texture: any = loadTexture(GameEngine.gl, './textures/kannu.jpg')
+                const texture2: any = loadTexture(GameEngine.gl, './textures/roughness.jpg')
+                const mat: Material = new Material(texture, texture2, 12)
 
                 gameEngine.costructBufferDatas(
                     reps.meshes[0].name,
@@ -46,13 +87,10 @@ function main() {
 
                 gameEngine.initBuffers()
                 const firstO: GameObject = new GameObject([0, 0, 0], gameEngine.meshList[reps.meshes[0].name], mat)
-                firstO.transform.rotation = [0,glMatrix.toRadian(0),0]
+                firstO.transform.translate([0, -1.5, 0])
+                firstO.transform.rotation = [0, 0, 0]
+                firstO.transform.scale = [2, 2, 2]
                 gameEngine.scene.push(firstO)
-
-                const sO: GameObject = new GameObject([0, 0, 0], gameEngine.meshList[reps.meshes[0].name], mat)
-                sO.transform.translate([4,0,0])
-                sO.transform.rotation = [glMatrix.toRadian(25),0,0]
-                gameEngine.scene.push(sO)
 
                 requestAnimationFrame((time) => update(gameEngine, time));
             });

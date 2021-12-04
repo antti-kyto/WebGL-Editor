@@ -1,11 +1,14 @@
 varying highp vec3 vFragPos;
 varying highp vec3 vNormal;
+varying highp vec3 vTangent;
+varying highp vec3 vBitangent;
 varying highp vec2 vTextureCoord;
 varying lowp vec4 vColor;
 varying lowp vec3 vViewPos;
 
 struct Material {
     sampler2D diffuse;
+    sampler2D normal;
     sampler2D specular;
     lowp float shininess;
 }; 
@@ -74,16 +77,21 @@ highp vec3 CalcPointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 view
 
 void main(void) {
 
+    highp mat3 TBN = mat3(vTangent, vBitangent, vNormal);
+    highp vec3 normal = vec3(texture2D(uMaterial.normal, vTextureCoord));
+    normal = normal * 2.0 - 1.0;   
+    normal = normalize(TBN * normal);
+
     highp vec3 viewDir = normalize(vViewPos - vFragPos);
     highp vec3 lightColor = vec3(1.0,1.0,0.94);
 
     // Directional lighting
-    highp vec3 result = CalcDirLight(uDirLight, vNormal, viewDir);
+    highp vec3 result = CalcDirLight(uDirLight, normal, viewDir);
 
     // Point lights
     for(int i = 0; i < NR_POINT_LIGHTS; i++) {
         if (i >= vNumPointLights){break;}
-        result += CalcPointLight(uPointLights[i], vNormal, vFragPos, viewDir); 
+        result += CalcPointLight(uPointLights[i], normal, vFragPos, viewDir); 
     }
 
     gl_FragColor = vec4(result, 1.0);

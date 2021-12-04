@@ -31,37 +31,42 @@ function main() {
 
         // Create ROOM
         {
-            let sO: GameObject = new GameObject([0, 0, 0], gameEngine.meshList["plane"])
+            const brick: any = loadTexture(GameEngine.gl, './textures/brick.jpg')
+            const brickNormal: any = loadTexture(GameEngine.gl, './textures/brick_normal.jpg')
+            const brickAlbedo: any = loadTexture(GameEngine.gl, './textures/brick_albedo.jpg')
+
+            const brickMat = new Material(brick, brickNormal, brickAlbedo)
+            let sO: GameObject = new GameObject([0, 0, 0], gameEngine.meshList["plane"], brickMat)
             sO.transform.translate([0, 0, 10])
             sO.transform.rotate([-90, 0, 0])
             sO.transform.scale = [10, 1, 10]
             gameEngine.scene.push(sO)
 
-            sO = new GameObject([0, 0, 0], gameEngine.meshList["plane"])
+            sO = new GameObject([0, 0, 0], gameEngine.meshList["plane"], brickMat)
             sO.transform.translate([-10, 0, 0])
             sO.transform.rotate([90, 90, 0])
             sO.transform.scale = [10, 1, 10]
             gameEngine.scene.push(sO)
 
-            sO = new GameObject([0, 0, 0], gameEngine.meshList["plane"])
+            sO = new GameObject([0, 0, 0], gameEngine.meshList["plane"], brickMat)
             sO.transform.translate([10, 0, 0])
             sO.transform.rotate([90, -90, 0])
             sO.transform.scale = [10, 1, 10]
             gameEngine.scene.push(sO)
 
-            sO = new GameObject([0, 0, 0], gameEngine.meshList["plane"])
+            sO = new GameObject([0, 0, 0], gameEngine.meshList["plane"], brickMat)
             sO.transform.translate([0, 0, -10])
             sO.transform.rotation = [90, 0, 0]
             sO.transform.scale = [10, 1, 10]
             gameEngine.scene.push(sO)
 
-            sO = new GameObject([0, 0, 0], gameEngine.meshList["plane"])
+            sO = new GameObject([0, 0, 0], gameEngine.meshList["plane"], brickMat)
             sO.transform.translate([0, -10, 0])
             sO.transform.rotation = [0, 0, 0]
             sO.transform.scale = [10, 1, 10]
             gameEngine.scene.push(sO)
 
-            sO = new GameObject([0, 0, 0], gameEngine.meshList["plane"])
+            sO = new GameObject([0, 0, 0], gameEngine.meshList["plane"], brickMat)
             sO.transform.translate([0, 10, 0])
             sO.transform.rotation = [180, 0, 0]
             sO.transform.scale = [10, 1, 10]
@@ -74,8 +79,9 @@ function main() {
                 console.log(reps.meshes[0].primitives[0].attributes)
 
                 const texture: any = loadTexture(GameEngine.gl, './textures/kannu.jpg')
+                const textureNormal: any = loadTexture(GameEngine.gl, './textures/kannuNormal.jpg')
                 const texture2: any = loadTexture(GameEngine.gl, './textures/roughness.jpg')
-                const mat: Material = new Material(texture, texture2, 12)
+                const mat: Material = new Material(texture, textureNormal, texture2, 12)
 
                 gameEngine.costructBufferDatas(
                     reps.meshes[0].name,
@@ -83,7 +89,8 @@ function main() {
                     reps.meshes[0].primitives[0].attributes.NORMAL.value,
                     [],
                     reps.meshes[0].primitives[0].attributes.TEXCOORD_0 ? reps.meshes[0].primitives[0].attributes.TEXCOORD_0.value : [],
-                    reps.meshes[0].primitives[0].indices.value)
+                    reps.meshes[0].primitives[0].indices.value,
+                    reps.meshes[0].primitives[0].attributes.TANGENT.value)
 
                 gameEngine.initBuffers()
                 const firstO: GameObject = new GameObject([0, 0, 0], gameEngine.meshList[reps.meshes[0].name], mat)

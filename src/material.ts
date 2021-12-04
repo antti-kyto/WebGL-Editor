@@ -4,15 +4,18 @@ import { getFileContent, createSolidTexture } from './util';
 export class Material {
 
     diffuse: WebGLTexture
+    normalMap: WebGLTexture
     specular: WebGLTexture
     shininess: number
 
     constructor(
-        diffuse: WebGLTexture = createSolidTexture(GameEngine.gl),
+        diffuse: WebGLTexture = createSolidTexture(GameEngine.gl, new Uint8Array([255, 255, 255, 0])),
+        normalMap: WebGLTexture = createSolidTexture(GameEngine.gl, new Uint8Array([255/2, 255/2, 255, 0])),
         specular: WebGLTexture = createSolidTexture(GameEngine.gl, new Uint8Array([0, 0, 0, 0])),
         shininess: number = 32
     ) {
         this.diffuse = diffuse
+        this.normalMap = normalMap
         this.specular = specular
         this.shininess = shininess
     }

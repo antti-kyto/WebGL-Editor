@@ -50,7 +50,8 @@ export class GameEngine {
                 -1.0, 0.0, 1.0,
                 1.0, 0.0, 1.0,
             ],
-            [0.0, 1.0, 0.0,
+            [
+                0.0, 1.0, 0.0,
                 0.0, 1.0, 0.0,
                 0.0, 1.0, 0.0,
                 0.0, 1.0, 0.0,],
@@ -61,7 +62,13 @@ export class GameEngine {
                 0.0, 0.0,
                 1.0, 0.0,
             ],
-            [0, 1, 2, 0, 2, 3]
+            [0, 1, 2, 0, 2, 3],
+            [
+                1., 0., 0., 1,
+                1., 0., 0., 1,
+                1., 0., 0., 1,
+                1., 0., 0., 1,
+            ]
         )
 
         // Init Shader program
@@ -75,6 +82,7 @@ export class GameEngine {
                 attribLocations: {
                     vertexPosition: GameEngine.gl.getAttribLocation(this.shaderProgram, 'aVertexPosition'),
                     vertexNormal: GameEngine.gl.getAttribLocation(this.shaderProgram, 'aVertexNormal'),
+                    vertexTangent: GameEngine.gl.getAttribLocation(this.shaderProgram, 'aVertexTangent'),
                     vertexColor: GameEngine.gl.getAttribLocation(this.shaderProgram, 'aVertexColor'),
                     textureCoord: GameEngine.gl.getAttribLocation(this.shaderProgram, 'aTextureCoord'),
                 },
@@ -87,6 +95,7 @@ export class GameEngine {
                     numPointLights: GameEngine.gl.getUniformLocation(this.shaderProgram, 'vNumPointLights'),
 
                     materialDiffuse: GameEngine.gl.getUniformLocation(this.shaderProgram, 'uMaterial.diffuse'),
+                    materialNormal: GameEngine.gl.getUniformLocation(this.shaderProgram, 'uMaterial.normal'),
                     materialSpecular: GameEngine.gl.getUniformLocation(this.shaderProgram, 'uMaterial.specular'),
                     materialShininess: GameEngine.gl.getUniformLocation(this.shaderProgram, 'uMaterial.shininess'),
 
@@ -102,7 +111,7 @@ export class GameEngine {
         });
     }
 
-    costructBufferDatas(meshName: string, positions: number[], normals: number[], colors: number[], textureCoordinates: number[], indices: number[]) {
+    costructBufferDatas(meshName: string, positions: number[], normals: number[], colors: number[], textureCoordinates: number[], indices: number[], tangents: number[]) {
 
         if (colors.length == 0) {
             for (let i: number = 0; i < positions.length / 3; i++) {
@@ -118,6 +127,7 @@ export class GameEngine {
 
         this.bufferDatas.position = this.bufferDatas.position.concat(Array.from(positions))
         this.bufferDatas.normal = this.bufferDatas.normal.concat(Array.from(normals))
+        this.bufferDatas.tangent = this.bufferDatas.tangent.concat(Array.from(tangents))
         this.bufferDatas.vertexColors = this.bufferDatas.vertexColors.concat(Array.from(colors))
         this.bufferDatas.textureCoord = this.bufferDatas.textureCoord.concat(Array.from(textureCoordinates))
         this.bufferDatas.indices = this.bufferDatas.indices.concat(Array.from(indices))
@@ -136,6 +146,11 @@ export class GameEngine {
         const normalBuffer = GameEngine.gl.createBuffer();
         GameEngine.gl.bindBuffer(GameEngine.gl.ARRAY_BUFFER, normalBuffer);
         GameEngine.gl.bufferData(GameEngine.gl.ARRAY_BUFFER, new Float32Array(this.bufferDatas.normal),
+            GameEngine.gl.STATIC_DRAW)
+
+        const tangentBuffer = GameEngine.gl.createBuffer();
+        GameEngine.gl.bindBuffer(GameEngine.gl.ARRAY_BUFFER, tangentBuffer);
+        GameEngine.gl.bufferData(GameEngine.gl.ARRAY_BUFFER, new Float32Array(this.bufferDatas.tangent),
             GameEngine.gl.STATIC_DRAW)
 
         // Create a buffer for the colors.
@@ -161,6 +176,7 @@ export class GameEngine {
 
         this.buffers.position = positionBuffer
         this.buffers.normal = normalBuffer
+        this.buffers.tangent = tangentBuffer
         this.buffers.vertexColors = vertexColorBuffer
         this.buffers.textureCoord = textureCoordBuffer
         this.buffers.indices = indexBuffer
@@ -232,8 +248,8 @@ export class GameEngine {
         // THIS IS FOR POINT LIGHT
         GameEngine.gl.uniform1i(
             this.programInfo.uniformLocations.numPointLights,
-            0);
-        for (let i = 0; i < 0; i++) {
+            3);
+        for (let i = 0; i < 3; i++) {
             const position = GameEngine.gl.getUniformLocation(this.shaderProgram, `uPointLights[${i}].position`)
             const constant = GameEngine.gl.getUniformLocation(this.shaderProgram, `uPointLights[${i}].constant`)
             const linear = GameEngine.gl.getUniformLocation(this.shaderProgram, `uPointLights[${i}].linear`)
@@ -249,7 +265,7 @@ export class GameEngine {
             GameEngine.gl.uniform1f(quadratic, 0.035);
 
             GameEngine.gl.uniform3fv(ambient, [.0, .0, .0]);
-            GameEngine.gl.uniform3fv(diffuse, [0 + i, 1, 0 + i]);
+            GameEngine.gl.uniform3fv(diffuse, [1 + i, 1, 0 + i]);
             GameEngine.gl.uniform3fv(specular, [0 + i, 1, 0 + i]);
         }
 
@@ -363,6 +379,26 @@ export class GameEngine {
                     this.programInfo.attribLocations.vertexNormal);
             }
 
+            // Tell WebGL how to pull out the normals from
+            // the normal buffer into the vertexNormal attribute.
+            {
+                const numComponents = 4;
+                const type = GameEngine.gl.FLOAT;
+                const normalize = false;
+                const stride = 0;
+                const offset = 0;
+                GameEngine.gl.bindBuffer(GameEngine.gl.ARRAY_BUFFER, this.buffers.tangent);
+                GameEngine.gl.vertexAttribPointer(
+                    this.programInfo.attribLocations.vertexTangent,
+                    numComponents,
+                    type,
+                    normalize,
+                    stride,
+                    offset);
+                GameEngine.gl.enableVertexAttribArray(
+                    this.programInfo.attribLocations.vertexTangent);
+            }
+
             // Tell WebGL how to pull out the vertexColor from the vertexColor buffer
             {
                 const numComponents: number = 4;  // pull out 2 values per iteration
@@ -401,12 +437,16 @@ export class GameEngine {
             // Bind the texture to texture unit 0
             // Tell the shader we bound the texture to texture unit 0
             GameEngine.gl.uniform1i(this.programInfo.uniformLocations.materialDiffuse, 0);
+            GameEngine.gl.uniform1i(this.programInfo.uniformLocations.materialNormal, 1);
             GameEngine.gl.uniform1i(this.programInfo.uniformLocations.materialSpecular, 1);
 
             GameEngine.gl.activeTexture(GameEngine.gl.TEXTURE0);
             GameEngine.gl.bindTexture(GameEngine.gl.TEXTURE_2D, element.material.diffuse);
 
             GameEngine.gl.activeTexture(GameEngine.gl.TEXTURE1);
+            GameEngine.gl.bindTexture(GameEngine.gl.TEXTURE_2D, element.material.normalMap);
+
+            GameEngine.gl.activeTexture(GameEngine.gl.TEXTURE2);
             GameEngine.gl.bindTexture(GameEngine.gl.TEXTURE_2D, element.material.specular);
 
             // TODO MATERIALS CLASS

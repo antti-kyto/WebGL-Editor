@@ -258,7 +258,7 @@ export class GameEngine {
             const diffuse = GameEngine.gl.getUniformLocation(this.shaderProgram, `uPointLights[${i}].diffuse`)
             const specular = GameEngine.gl.getUniformLocation(this.shaderProgram, `uPointLights[${i}].specular`)
 
-            GameEngine.gl.uniform3fv(position, [-5 + (i * 5), 2, 0]);
+            GameEngine.gl.uniform3fv(position, [-5 + (i * 5), 4, 0]);
 
             GameEngine.gl.uniform1f(constant, 1.0);
             GameEngine.gl.uniform1f(linear, 0.15);
@@ -275,13 +275,13 @@ export class GameEngine {
             [1, 1, -1]);
         GameEngine.gl.uniform3fv(
             this.programInfo.uniformLocations.dirLightAmbient,
-            [.51, .55, .58]);
+            [.0, .0, .0]);
         GameEngine.gl.uniform3fv(
             this.programInfo.uniformLocations.dirLightDiffuse,
-            [0.99, 0.85, .65]);
+            [0.0, 0.0, .0]);
         GameEngine.gl.uniform3fv(
             this.programInfo.uniformLocations.dirLightSpecular,
-            [.32, .3, .25]);
+            [.0, .0, .0]);
 
         this.clearCanvas()
 

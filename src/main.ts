@@ -37,40 +37,11 @@ function main() {
 
             const brickMat = new Material(brick, brickNormal, brickAlbedo)
             let sO: GameObject = new GameObject([0, 0, 0], gameEngine.meshList["plane"], brickMat)
-            sO.transform.translate([0, 0, 10])
-            sO.transform.rotate([-90, 0, 0])
-            sO.transform.scale = [10, 1, 10]
-            gameEngine.scene.push(sO)
-
-            sO = new GameObject([0, 0, 0], gameEngine.meshList["plane"], brickMat)
-            sO.transform.translate([-10, 0, 0])
-            sO.transform.rotate([90, 90, 0])
-            sO.transform.scale = [10, 1, 10]
-            gameEngine.scene.push(sO)
-
-            sO = new GameObject([0, 0, 0], gameEngine.meshList["plane"], brickMat)
-            sO.transform.translate([10, 0, 0])
-            sO.transform.rotate([90, -90, 0])
-            sO.transform.scale = [10, 1, 10]
-            gameEngine.scene.push(sO)
-
-            sO = new GameObject([0, 0, 0], gameEngine.meshList["plane"], brickMat)
-            sO.transform.translate([0, 0, -10])
-            sO.transform.rotation = [90, 0, 0]
-            sO.transform.scale = [10, 1, 10]
-            gameEngine.scene.push(sO)
-
-            sO = new GameObject([0, 0, 0], gameEngine.meshList["plane"], brickMat)
-            sO.transform.translate([0, -10, 0])
+            sO.transform.translate([0, -3.4, 0])
             sO.transform.rotation = [0, 0, 0]
             sO.transform.scale = [10, 1, 10]
             gameEngine.scene.push(sO)
 
-            sO = new GameObject([0, 0, 0], gameEngine.meshList["plane"], brickMat)
-            sO.transform.translate([0, 10, 0])
-            sO.transform.rotation = [180, 0, 0]
-            sO.transform.scale = [10, 1, 10]
-            gameEngine.scene.push(sO)
         }
 
         load("./models/kannu.glb", GLTFLoader)

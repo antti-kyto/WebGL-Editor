@@ -44,8 +44,10 @@ highp vec3 CalcDirLight(DirLight light, vec3 normal, vec3 viewDir)
     // diffuse shading
     highp float diff = max(dot(normal, lightDir), 0.0);
     // specular shading
-    highp vec3 reflectDir = reflect(-lightDir, normal);
-    highp float spec = pow(max(dot(viewDir, reflectDir), 0.0), uMaterial.shininess);
+    highp vec3 halfwayDir = normalize(lightDir + viewDir);
+    highp float spec = pow(max(dot(normal, halfwayDir), 0.0), uMaterial.shininess);
+    if(diff == 0.0)
+        spec = 0.0;
     // combine results
     highp vec3 ambient  = light.ambient  * vec3(texture2D(uMaterial.diffuse, vTextureCoord));
     highp vec3 diffuse  = light.diffuse  * diff * vec3(texture2D(uMaterial.diffuse, vTextureCoord));
@@ -59,8 +61,10 @@ highp vec3 CalcPointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 view
     // diffuse shading
     highp float diff = max(dot(normal, lightDir), 0.0);
     // specular shading
-    highp vec3 reflectDir = reflect(-lightDir, normal);
-    highp float spec = pow(max(dot(viewDir, reflectDir), 0.0), uMaterial.shininess);
+    highp vec3 halfwayDir = normalize(lightDir + viewDir);
+    highp float spec = pow(max(dot(normal, halfwayDir), 0.0), uMaterial.shininess);
+    if(diff == 0.0)
+        spec = 0.0;
     // attenuation
     highp float distance    = length(light.position - fragPos);
     highp float attenuation = 1.0 / (light.constant + light.linear * distance + 

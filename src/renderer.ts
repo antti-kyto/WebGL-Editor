@@ -438,7 +438,7 @@ export class GameEngine {
             // Tell the shader we bound the texture to texture unit 0
             GameEngine.gl.uniform1i(this.programInfo.uniformLocations.materialDiffuse, 0);
             GameEngine.gl.uniform1i(this.programInfo.uniformLocations.materialNormal, 1);
-            GameEngine.gl.uniform1i(this.programInfo.uniformLocations.materialSpecular, 1);
+            GameEngine.gl.uniform1i(this.programInfo.uniformLocations.materialSpecular, 2);
 
             GameEngine.gl.activeTexture(GameEngine.gl.TEXTURE0);
             GameEngine.gl.bindTexture(GameEngine.gl.TEXTURE_2D, element.material.diffuse);

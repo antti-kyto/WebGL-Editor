@@ -68,7 +68,7 @@ highp vec3 CalcPointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 view
     // attenuation
     highp float distance    = length(light.position - fragPos);
     highp float attenuation = 1.0 / (light.constant + light.linear * distance + 
-  			     light.quadratic * (distance * distance));    
+  			     light.quadratic * (distance * distance));
     // combine results
     highp vec3 ambient  = light.ambient  * vec3(texture2D(uMaterial.diffuse, vTextureCoord));
     highp vec3 diffuse  = light.diffuse  * diff * vec3(texture2D(uMaterial.diffuse, vTextureCoord));
@@ -97,6 +97,9 @@ void main(void) {
         if (i >= vNumPointLights){break;}
         result += CalcPointLight(uPointLights[i], normal, vFragPos, viewDir); 
     }
+
+    highp float gamma = 2.2;
+    result = pow(result, vec3(1.0/gamma));
 
     gl_FragColor = vec4(result, 1.0);
     

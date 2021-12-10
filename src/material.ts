@@ -12,7 +12,7 @@ export class Material {
         diffuse: WebGLTexture = createSolidTexture(GameEngine.gl, new Uint8Array([255, 255, 255, 0])),
         normalMap: WebGLTexture = createSolidTexture(GameEngine.gl, new Uint8Array([255/2, 255/2, 255, 0])),
         specular: WebGLTexture = createSolidTexture(GameEngine.gl, new Uint8Array([0, 0, 0, 0])),
-        shininess: number = 24
+        shininess: number = 12
     ) {
         this.diffuse = diffuse
         this.normalMap = normalMap

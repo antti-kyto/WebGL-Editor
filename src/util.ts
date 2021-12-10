@@ -25,9 +25,11 @@ export function createSolidTexture(gl: any, color: Uint8Array = new Uint8Array([
     return texture;
 }
 
-export function loadTexture(gl: any, url: string): WebGLTexture {
+export function loadTexture(gl: any, url: string, linear: boolean = true): WebGLTexture {
     const texture: WebGLTexture = gl.createTexture();
     gl.bindTexture(gl.TEXTURE_2D, texture);
+
+    var ext = gl.getExtension('EXT_sRGB');
 
     // Because images have to be downloaded over the internet
     // they might take a moment until they are ready.
@@ -35,11 +37,11 @@ export function loadTexture(gl: any, url: string): WebGLTexture {
     // use it immediately. When the image has finished downloading
     // we'll update the texture with the contents of the image.
     const level: number = 0;
-    const internalFormat: any = gl.RGBA;
+    const internalFormat: any = linear ? gl.RGBA : ext.SRGB_ALPHA_EXT;
     const width: number = 1;
     const height: number = 1;
     const border: number = 0;
-    const srcFormat: any = gl.RGBA;
+    const srcFormat: any = linear ? gl.RGBA : ext.SRGB_ALPHA_EXT;
     const srcType: any = gl.UNSIGNED_BYTE;
     const pixel: Uint8Array = new Uint8Array([255, 0, 255, 255]);  // opaque blue
     gl.texImage2D(gl.TEXTURE_2D, level, internalFormat,
@@ -55,7 +57,7 @@ export function loadTexture(gl: any, url: string): WebGLTexture {
         // WebGL1 has different requirements for power of 2 images
         // vs non power of 2 images so check if the image is a
         // power of 2 in both dimensions.
-        if (isPowerOf2(image.width) && isPowerOf2(image.height)) {
+        if (linear && isPowerOf2(image.width) && isPowerOf2(image.height)) {
             // Yes, it's a power of 2. Generate mips.
             gl.generateMipmap(gl.TEXTURE_2D);
         } else {

@@ -248,8 +248,8 @@ export class GameEngine {
         // THIS IS FOR POINT LIGHT
         GameEngine.gl.uniform1i(
             this.programInfo.uniformLocations.numPointLights,
-            3);
-        for (let i = 0; i < 3; i++) {
+            2);
+        for (let i = 0; i < 2; i++) {
             const position = GameEngine.gl.getUniformLocation(this.shaderProgram, `uPointLights[${i}].position`)
             const constant = GameEngine.gl.getUniformLocation(this.shaderProgram, `uPointLights[${i}].constant`)
             const linear = GameEngine.gl.getUniformLocation(this.shaderProgram, `uPointLights[${i}].linear`)
@@ -258,15 +258,15 @@ export class GameEngine {
             const diffuse = GameEngine.gl.getUniformLocation(this.shaderProgram, `uPointLights[${i}].diffuse`)
             const specular = GameEngine.gl.getUniformLocation(this.shaderProgram, `uPointLights[${i}].specular`)
 
-            GameEngine.gl.uniform3fv(position, [-5 + (i * 5), 4, 0]);
+            GameEngine.gl.uniform3fv(position, [-5+(i*10), 4, 0]);
 
             GameEngine.gl.uniform1f(constant, 1.0);
             GameEngine.gl.uniform1f(linear, 0.15);
             GameEngine.gl.uniform1f(quadratic, 0.035);
 
-            GameEngine.gl.uniform3fv(ambient, [.0, .0, .0]);
-            GameEngine.gl.uniform3fv(diffuse, [1 + i, 1, 0 + i]);
-            GameEngine.gl.uniform3fv(specular, [0 + i, 1, 0 + i]);
+            GameEngine.gl.uniform3fv(ambient, [0.3, .3, 0.0]);
+            GameEngine.gl.uniform3fv(diffuse, [1, 1, 0.1]);
+            GameEngine.gl.uniform3fv(specular, [1, 1 , 0.1]);
         }
 
         // Set Directional Lights
@@ -275,13 +275,13 @@ export class GameEngine {
             [1, 1, -1]);
         GameEngine.gl.uniform3fv(
             this.programInfo.uniformLocations.dirLightAmbient,
-            [.0, .0, .0]);
+            [.133, .023, .138]);
         GameEngine.gl.uniform3fv(
             this.programInfo.uniformLocations.dirLightDiffuse,
-            [0.0, 0.0, .0]);
+            [0.3, 0.0, .1]);
         GameEngine.gl.uniform3fv(
             this.programInfo.uniformLocations.dirLightSpecular,
-            [.0, .0, .0]);
+            [.3, .0, .1]);
 
         this.clearCanvas()
 

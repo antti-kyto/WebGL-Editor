@@ -31,7 +31,7 @@ function main() {
 
         // Create ROOM
         {
-            const brick: any = loadTexture(GameEngine.gl, './textures/brick.jpg')
+            const brick: any = loadTexture(GameEngine.gl, './textures/brick.jpg', false)
             const brickNormal: any = loadTexture(GameEngine.gl, './textures/brick_normal.jpg')
             const brickAlbedo: any = loadTexture(GameEngine.gl, './textures/brick_albedo.jpg')
 
@@ -39,7 +39,7 @@ function main() {
             let sO: GameObject = new GameObject([0, 0, 0], gameEngine.meshList["plane"], brickMat)
             sO.transform.translate([0, -3.4, 0])
             sO.transform.rotation = [0, 0, 0]
-            sO.transform.scale = [10, 1, 10]
+            sO.transform.scale = [30, 1, 30]
             gameEngine.scene.push(sO)
 
         }
@@ -49,7 +49,7 @@ function main() {
 
                 console.log(reps.meshes[0].primitives[0].attributes)
 
-                const texture: any = loadTexture(GameEngine.gl, './textures/kannu.jpg')
+                const texture: any = loadTexture(GameEngine.gl, './textures/kannu.jpg', false)
                 const textureNormal: any = loadTexture(GameEngine.gl, './textures/kannuNormal.jpg')
                 const texture2: any = loadTexture(GameEngine.gl, './textures/roughness.jpg')
                 const mat: Material = new Material(texture, textureNormal, texture2, 12)

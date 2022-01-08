@@ -5,19 +5,20 @@ import { Buffers } from './buffers';
 import { Camera } from './camera';
 
 import { vec3, mat4, quat } from 'gl-matrix';
+import { ShadowMapping } from './shadowMapping';
 
 export class GameEngine {
 
     static gl: any
+    static scene: Array<GameObject> = []
+    static buffers: Buffers = new Buffers()
     canvas: any
 
     readyToRender: boolean = false
     meshList: any = []
-    scene: Array<GameObject> = []
     emptyTexture: any = null
     cameraScale: number = 0
 
-    buffers: Buffers = new Buffers()
     bufferDatas: Buffers = new Buffers()
 
     shaderProgram: any
@@ -99,6 +100,9 @@ export class GameEngine {
                     materialSpecular: GameEngine.gl.getUniformLocation(this.shaderProgram, 'uMaterial.specular'),
                     materialShininess: GameEngine.gl.getUniformLocation(this.shaderProgram, 'uMaterial.shininess'),
 
+                    shadowMap: GameEngine.gl.getUniformLocation(this.shaderProgram, 'uShadowMap'),
+                    lightSpaceMatrix: GameEngine.gl.getUniformLocation(this.shaderProgram, 'uLightSpaceMatrix'),
+
                     dirLightDirection: GameEngine.gl.getUniformLocation(this.shaderProgram, 'uDirLight.direction'),
                     dirLightAmbient: GameEngine.gl.getUniformLocation(this.shaderProgram, 'uDirLight.ambient'),
                     dirLightDiffuse: GameEngine.gl.getUniformLocation(this.shaderProgram, 'uDirLight.diffuse'),
@@ -174,12 +178,12 @@ export class GameEngine {
         GameEngine.gl.bufferData(GameEngine.gl.ELEMENT_ARRAY_BUFFER,
             new Uint16Array(this.bufferDatas.indices), GameEngine.gl.STATIC_DRAW);
 
-        this.buffers.position = positionBuffer
-        this.buffers.normal = normalBuffer
-        this.buffers.tangent = tangentBuffer
-        this.buffers.vertexColors = vertexColorBuffer
-        this.buffers.textureCoord = textureCoordBuffer
-        this.buffers.indices = indexBuffer
+        GameEngine.buffers.position = positionBuffer
+        GameEngine.buffers.normal = normalBuffer
+        GameEngine.buffers.tangent = tangentBuffer
+        GameEngine.buffers.vertexColors = vertexColorBuffer
+        GameEngine.buffers.textureCoord = textureCoordBuffer
+        GameEngine.buffers.indices = indexBuffer
     }
 
     initShaderProgram(gl: any, vsSource: any, fsSource: any): any {
@@ -237,10 +241,14 @@ export class GameEngine {
 
     drawScene() {
 
+        GameEngine.gl.viewport(0, 0, this.canvas.width, this.canvas.height);
+
         if (!this.readyToRender) {
             console.log("Not Ready to Render")
             return
         }
+
+        GameEngine.gl.bindFramebuffer(GameEngine.gl.FRAMEBUFFER, null);
 
         // Tell WebGL to use our program when drawing
         GameEngine.gl.useProgram(this.programInfo.program);
@@ -248,8 +256,8 @@ export class GameEngine {
         // THIS IS FOR POINT LIGHT
         GameEngine.gl.uniform1i(
             this.programInfo.uniformLocations.numPointLights,
-            2);
-        for (let i = 0; i < 2; i++) {
+            0);
+        for (let i = 0; i < 0; i++) {
             const position = GameEngine.gl.getUniformLocation(this.shaderProgram, `uPointLights[${i}].position`)
             const constant = GameEngine.gl.getUniformLocation(this.shaderProgram, `uPointLights[${i}].constant`)
             const linear = GameEngine.gl.getUniformLocation(this.shaderProgram, `uPointLights[${i}].linear`)
@@ -258,7 +266,7 @@ export class GameEngine {
             const diffuse = GameEngine.gl.getUniformLocation(this.shaderProgram, `uPointLights[${i}].diffuse`)
             const specular = GameEngine.gl.getUniformLocation(this.shaderProgram, `uPointLights[${i}].specular`)
 
-            GameEngine.gl.uniform3fv(position, [-5+(i*10), 4, 0]);
+            GameEngine.gl.uniform3fv(position, [-5 + (i * 10), 4, 0]);
 
             GameEngine.gl.uniform1f(constant, 1.0);
             GameEngine.gl.uniform1f(linear, 0.15);
@@ -266,22 +274,26 @@ export class GameEngine {
 
             GameEngine.gl.uniform3fv(ambient, [0.3, .3, 0.0]);
             GameEngine.gl.uniform3fv(diffuse, [1, 1, 0.1]);
-            GameEngine.gl.uniform3fv(specular, [1, 1 , 0.1]);
+            GameEngine.gl.uniform3fv(specular, [1, 1, 0.1]);
         }
 
         // Set Directional Lights
         GameEngine.gl.uniform3fv(
             this.programInfo.uniformLocations.dirLightDirection,
-            [1, 1, -1]);
+            [1, 1, 0]);
         GameEngine.gl.uniform3fv(
             this.programInfo.uniformLocations.dirLightAmbient,
-            [.133, .023, .138]);
+            [.0, .0, .0]);
         GameEngine.gl.uniform3fv(
             this.programInfo.uniformLocations.dirLightDiffuse,
-            [0.3, 0.0, .1]);
+            [0.3, 0.3, .4]);
         GameEngine.gl.uniform3fv(
             this.programInfo.uniformLocations.dirLightSpecular,
-            [.3, .0, .1]);
+            [.1, .1, .2]);
+        GameEngine.gl.uniformMatrix4fv(
+            this.programInfo.uniformLocations.lightSpaceMatrix,
+            false,
+            ShadowMapping.lightSpaceMatrix);
 
         this.clearCanvas()
 
@@ -316,7 +328,7 @@ export class GameEngine {
             vec3.add(vec3.create(), Camera.camera.transform.position, cameraFront),
             [0, 1, 0])
 
-        this.scene.forEach(element => {
+        GameEngine.scene.forEach(element => {
 
             if (!element.mesh) {
                 return
@@ -347,7 +359,7 @@ export class GameEngine {
                 const normalize: boolean = false;  // don't normalize
                 const stride: number = 0;         // how many bytes to get from one set of values to the next
                 const offset: number = 0;         // how many bytes inside the buffer to start from
-                GameEngine.gl.bindBuffer(GameEngine.gl.ARRAY_BUFFER, this.buffers.position);
+                GameEngine.gl.bindBuffer(GameEngine.gl.ARRAY_BUFFER, GameEngine.buffers.position);
                 GameEngine.gl.vertexAttribPointer(
                     this.programInfo.attribLocations.vertexPosition,
                     numComponents,
@@ -367,7 +379,7 @@ export class GameEngine {
                 const normalize = false;
                 const stride = 0;
                 const offset = 0;
-                GameEngine.gl.bindBuffer(GameEngine.gl.ARRAY_BUFFER, this.buffers.normal);
+                GameEngine.gl.bindBuffer(GameEngine.gl.ARRAY_BUFFER, GameEngine.buffers.normal);
                 GameEngine.gl.vertexAttribPointer(
                     this.programInfo.attribLocations.vertexNormal,
                     numComponents,
@@ -387,7 +399,7 @@ export class GameEngine {
                 const normalize = false;
                 const stride = 0;
                 const offset = 0;
-                GameEngine.gl.bindBuffer(GameEngine.gl.ARRAY_BUFFER, this.buffers.tangent);
+                GameEngine.gl.bindBuffer(GameEngine.gl.ARRAY_BUFFER, GameEngine.buffers.tangent);
                 GameEngine.gl.vertexAttribPointer(
                     this.programInfo.attribLocations.vertexTangent,
                     numComponents,
@@ -406,7 +418,7 @@ export class GameEngine {
                 const normalize: boolean = false;  // don't normalize
                 const stride: number = 0;         // how many bytes to get from one set of values to the next
                 const offset: number = 0;         // how many bytes inside the buffer to start from
-                GameEngine.gl.bindBuffer(GameEngine.gl.ARRAY_BUFFER, this.buffers.vertexColors);
+                GameEngine.gl.bindBuffer(GameEngine.gl.ARRAY_BUFFER, GameEngine.buffers.vertexColors);
                 GameEngine.gl.vertexAttribPointer(
                     this.programInfo.attribLocations.vertexColor,
                     numComponents,
@@ -425,13 +437,13 @@ export class GameEngine {
                 const normalize: boolean = false; // don't normalize
                 const stride: number = 0; // how many bytes to get from one set to the next
                 const offset: number = 0; // how many bytes inside the buffer to start from
-                GameEngine.gl.bindBuffer(GameEngine.gl.ARRAY_BUFFER, this.buffers.textureCoord);
+                GameEngine.gl.bindBuffer(GameEngine.gl.ARRAY_BUFFER, GameEngine.buffers.textureCoord);
                 GameEngine.gl.vertexAttribPointer(this.programInfo.attribLocations.textureCoord, num, type, normalize, stride, offset);
                 GameEngine.gl.enableVertexAttribArray(this.programInfo.attribLocations.textureCoord);
             }
 
             // Tell WebGL which indices to use to index the vertices
-            GameEngine.gl.bindBuffer(GameEngine.gl.ELEMENT_ARRAY_BUFFER, this.buffers.indices);
+            GameEngine.gl.bindBuffer(GameEngine.gl.ELEMENT_ARRAY_BUFFER, GameEngine.buffers.indices);
 
             // Tell WebGL we want to affect texture unit 0
             // Bind the texture to texture unit 0
@@ -439,6 +451,8 @@ export class GameEngine {
             GameEngine.gl.uniform1i(this.programInfo.uniformLocations.materialDiffuse, 0);
             GameEngine.gl.uniform1i(this.programInfo.uniformLocations.materialNormal, 1);
             GameEngine.gl.uniform1i(this.programInfo.uniformLocations.materialSpecular, 2);
+            GameEngine.gl.uniform1i(this.programInfo.uniformLocations.shadowMap, 3);
+
 
             GameEngine.gl.activeTexture(GameEngine.gl.TEXTURE0);
             GameEngine.gl.bindTexture(GameEngine.gl.TEXTURE_2D, element.material.diffuse);
@@ -448,6 +462,9 @@ export class GameEngine {
 
             GameEngine.gl.activeTexture(GameEngine.gl.TEXTURE2);
             GameEngine.gl.bindTexture(GameEngine.gl.TEXTURE_2D, element.material.specular);
+
+            GameEngine.gl.activeTexture(GameEngine.gl.TEXTURE3);
+            GameEngine.gl.bindTexture(GameEngine.gl.TEXTURE_2D, ShadowMapping.shadowMapTexture);
 
             // TODO MATERIALS CLASS
             GameEngine.gl.uniform1f(this.programInfo.uniformLocations.materialShininess, element.material.shininess);

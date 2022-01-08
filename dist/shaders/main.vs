@@ -9,6 +9,7 @@ uniform mat4 uViewMatrix;
 uniform mat4 uModelMatrix;
 uniform mat4 uNormalMatrix;
 uniform vec3 uViewPos;
+uniform mat4 uLightSpaceMatrix;
 
 varying highp vec3 vFragPos;
 varying highp vec3 vNormal;
@@ -17,6 +18,7 @@ varying highp vec3 vBitangent;
 varying highp vec2 vTextureCoord;
 varying lowp vec4 vColor;
 varying lowp vec3 vViewPos;
+varying highp vec4 vFragPosLightSpace;
 
 void main(void) {
     
@@ -31,4 +33,6 @@ void main(void) {
     vTextureCoord = aTextureCoord;
     vColor = aVertexColor;
     vViewPos = uViewPos;
+
+    vFragPosLightSpace = uLightSpaceMatrix * vec4(vFragPos, 1.0);
 }

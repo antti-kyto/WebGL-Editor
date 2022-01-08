@@ -12,14 +12,20 @@ import { FreeLook } from './freelook';
 import { Time } from './time';
 import { glMatrix } from 'gl-matrix';
 import { Material } from './material';
+import { ShadowMapping } from './shadowMapping';
 
 const cameraScale: number = -100
 let then: number = 0
+let shadowMapping
 
 // Start
 function main() {
     try {
-        const gameEngine: GameEngine = new GameEngine(900, 900, cameraScale);
+        const canvas = document.querySelector('#glCanvas');
+        console.log(canvas.clientWidth)
+        console.log(canvas.clientHeight)
+
+        const gameEngine: GameEngine = new GameEngine(canvas.clientWidth, canvas.clientHeight, cameraScale);
         gameEngine.clearCanvas();
 
         const camera: GameObject = new GameObject([0, 0, -10]);
@@ -27,7 +33,9 @@ function main() {
         camera.addComponent(FreeLook);
         Camera.camera = camera;
         camera.transform.rotate([0, glMatrix.toRadian(0), 0])
-        gameEngine.scene.push(camera);
+        GameEngine.scene.push(camera);
+
+        shadowMapping = new ShadowMapping();
 
         // Create ROOM
         {
@@ -40,7 +48,7 @@ function main() {
             sO.transform.translate([0, -3.4, 0])
             sO.transform.rotation = [0, 0, 0]
             sO.transform.scale = [30, 1, 30]
-            gameEngine.scene.push(sO)
+            GameEngine.scene.push(sO)
 
         }
 
@@ -64,11 +72,17 @@ function main() {
                     reps.meshes[0].primitives[0].attributes.TANGENT.value)
 
                 gameEngine.initBuffers()
-                const firstO: GameObject = new GameObject([0, 0, 0], gameEngine.meshList[reps.meshes[0].name], mat)
+                let firstO: GameObject = new GameObject([0, 0, 0], gameEngine.meshList[reps.meshes[0].name], mat)
                 firstO.transform.translate([0, -1.5, 0])
                 firstO.transform.rotation = [0, 0, 0]
                 firstO.transform.scale = [2, 2, 2]
-                gameEngine.scene.push(firstO)
+                GameEngine.scene.push(firstO)
+
+                firstO = new GameObject([0, 0, 0], gameEngine.meshList[reps.meshes[0].name], mat)
+                firstO.transform.translate([-4, -1.5, -4])
+                firstO.transform.rotation = [0, 0, 0]
+                firstO.transform.scale = [2, 2, 2]
+                GameEngine.scene.push(firstO)
 
                 requestAnimationFrame((time) => update(gameEngine, time));
             });
@@ -83,13 +97,14 @@ function update(gameEngine: GameEngine, time: number) {
     Time.deltaTime = time - then
     then = time;
 
-    gameEngine.scene.forEach(gameObject => {
+    GameEngine.scene.forEach(gameObject => {
         // gameObject.transform.rotate([Time.deltaTime*1, 0, 0])
         gameObject.components.forEach(component => {
             component.update()
         })
     });
 
+    shadowMapping.shadowMapRender();
     gameEngine.drawScene();
     requestAnimationFrame((time) => update(gameEngine, time))
 }

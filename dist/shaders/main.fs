@@ -41,7 +41,7 @@ uniform lowp int vNumPointLights;
 #define NR_POINT_LIGHTS 100
 uniform PointLight uPointLights[NR_POINT_LIGHTS];
 
-highp float ShadowCalculation(vec4 fragPosLightSpace, DirLight light, vec3 normal)
+highp float ShadowCalculation(highp vec4 fragPosLightSpace, DirLight light, highp vec3 normal)
 {
     // perform perspective divide
     highp vec3 projCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;
@@ -66,7 +66,7 @@ highp float ShadowCalculation(vec4 fragPosLightSpace, DirLight light, vec3 norma
     return shadow;
 } 
 
-highp vec3 CalcDirLight(DirLight light, vec3 normal, vec3 viewDir)
+highp vec3 CalcDirLight(DirLight light, highp vec3 normal, highp vec3 viewDir)
 {
     highp vec3 lightDir = normalize(light.direction);
     // diffuse shading
@@ -85,7 +85,7 @@ highp vec3 CalcDirLight(DirLight light, vec3 normal, vec3 viewDir)
     return (ambient + (1.0 - shadow) * (diffuse + specular));
 }
 
-highp vec3 CalcPointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir)
+highp vec3 CalcPointLight(PointLight light, highp vec3 normal, highp vec3 fragPos, highp vec3 viewDir)
 {
     highp vec3 lightDir = normalize(light.position - fragPos);
     // diffuse shading

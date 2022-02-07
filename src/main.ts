@@ -9,6 +9,7 @@ import { GLTFLoader } from '@loaders.gl/gltf';
 import { loadTexture } from './util'
 import { Camera } from './camera';
 import { FreeLook } from './freelook';
+import { PointLight } from './pointLight';
 import { Time } from './time';
 import { glMatrix } from 'gl-matrix';
 import { Material } from './material';
@@ -35,6 +36,8 @@ function main() {
         camera.transform.rotate([0, glMatrix.toRadian(0), 0])
         GameEngine.scene.push(camera);
 
+        const newPointLight: PointLight = new PointLight()
+
         shadowMapping = new ShadowMapping();
 
         // Create ROOM
@@ -43,16 +46,15 @@ function main() {
             const brickNormal: any = loadTexture(GameEngine.gl, './textures/brick_normal.jpg')
             const brickAlbedo: any = loadTexture(GameEngine.gl, './textures/brick_albedo.jpg')
 
-            const brickMat = new Material(brick, brickNormal, brickAlbedo)
+            const brickMat = new Material(brick, brickNormal, brickAlbedo, 124)
             let sO: GameObject = new GameObject([0, 0, 0], gameEngine.meshList["plane"], brickMat)
             sO.transform.translate([0, -3.4, 0])
             sO.transform.rotation = [0, 0, 0]
             sO.transform.scale = [30, 1, 30]
             GameEngine.scene.push(sO)
-
         }
 
-        load("./models/kannu.glb", GLTFLoader)
+        load("./models/sphere.glb", GLTFLoader)
             .then((reps) => {
 
                 console.log(reps.meshes[0].primitives[0].attributes)
@@ -60,7 +62,7 @@ function main() {
                 const texture: any = loadTexture(GameEngine.gl, './textures/kannu.jpg', false)
                 const textureNormal: any = loadTexture(GameEngine.gl, './textures/kannuNormal.jpg')
                 const texture2: any = loadTexture(GameEngine.gl, './textures/roughness.jpg')
-                const mat: Material = new Material(texture, textureNormal, texture2, 12)
+                const mat: Material = new Material()
 
                 gameEngine.costructBufferDatas(
                     reps.meshes[0].name,

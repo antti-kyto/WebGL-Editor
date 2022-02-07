@@ -1,6 +1,7 @@
 import { getFileContent, createSolidTexture } from './util';
 import { Mesh } from './mesh';
 import { GameObject } from './gameObject';
+import { PointLight } from './pointLight';
 import { Buffers } from './buffers';
 import { Camera } from './camera';
 
@@ -11,6 +12,7 @@ export class GameEngine {
 
     static gl: any
     static scene: Array<GameObject> = []
+    static pointLights: Array<PointLight> = []
     static buffers: Buffers = new Buffers()
     canvas: any
 
@@ -256,8 +258,8 @@ export class GameEngine {
         // THIS IS FOR POINT LIGHT
         GameEngine.gl.uniform1i(
             this.programInfo.uniformLocations.numPointLights,
-            0);
-        for (let i = 0; i < 0; i++) {
+            GameEngine.pointLights.length);
+        for (let i = 0; i < GameEngine.pointLights.length; i++) {
             const position = GameEngine.gl.getUniformLocation(this.shaderProgram, `uPointLights[${i}].position`)
             const constant = GameEngine.gl.getUniformLocation(this.shaderProgram, `uPointLights[${i}].constant`)
             const linear = GameEngine.gl.getUniformLocation(this.shaderProgram, `uPointLights[${i}].linear`)
@@ -266,15 +268,15 @@ export class GameEngine {
             const diffuse = GameEngine.gl.getUniformLocation(this.shaderProgram, `uPointLights[${i}].diffuse`)
             const specular = GameEngine.gl.getUniformLocation(this.shaderProgram, `uPointLights[${i}].specular`)
 
-            GameEngine.gl.uniform3fv(position, [-5 + (i * 10), 4, 0]);
+            GameEngine.gl.uniform3fv(position, GameEngine.pointLights[i].position);
 
-            GameEngine.gl.uniform1f(constant, 1.0);
-            GameEngine.gl.uniform1f(linear, 0.15);
-            GameEngine.gl.uniform1f(quadratic, 0.035);
+            GameEngine.gl.uniform1f(constant, GameEngine.pointLights[i].constant);
+            GameEngine.gl.uniform1f(linear, GameEngine.pointLights[i].linear);
+            GameEngine.gl.uniform1f(quadratic, GameEngine.pointLights[i].quadratic);
 
-            GameEngine.gl.uniform3fv(ambient, [0.3, .3, 0.0]);
-            GameEngine.gl.uniform3fv(diffuse, [1, 1, 0.1]);
-            GameEngine.gl.uniform3fv(specular, [1, 1, 0.1]);
+            GameEngine.gl.uniform3fv(ambient, GameEngine.pointLights[i].ambient);
+            GameEngine.gl.uniform3fv(diffuse, GameEngine.pointLights[i].diffuse);
+            GameEngine.gl.uniform3fv(specular, GameEngine.pointLights[i].specular);
         }
 
         // Set Directional Lights
@@ -283,13 +285,13 @@ export class GameEngine {
             [1, 1, 0]);
         GameEngine.gl.uniform3fv(
             this.programInfo.uniformLocations.dirLightAmbient,
-            [.0, .0, .0]);
+            [.00, .00, .00]);
         GameEngine.gl.uniform3fv(
             this.programInfo.uniformLocations.dirLightDiffuse,
             [0.3, 0.3, .4]);
         GameEngine.gl.uniform3fv(
             this.programInfo.uniformLocations.dirLightSpecular,
-            [.1, .1, .2]);
+            [1, 1, 1]);
         GameEngine.gl.uniformMatrix4fv(
             this.programInfo.uniformLocations.lightSpaceMatrix,
             false,

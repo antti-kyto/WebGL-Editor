@@ -11,7 +11,7 @@ import { Camera } from './camera';
 import { FreeLook } from './freelook';
 import { PointLight } from './pointLight';
 import { Time } from './time';
-import { glMatrix } from 'gl-matrix';
+import { glMatrix, vec3 } from 'gl-matrix';
 import { Material } from './material';
 import { ShadowMapping } from './shadowMapping';
 
@@ -19,6 +19,8 @@ const cameraScale: number = -100
 let then: number = 0
 let shadowMapping
 
+
+let myLight: GameObject
 // Start
 function main() {
     try {
@@ -36,7 +38,7 @@ function main() {
         camera.transform.rotate([0, glMatrix.toRadian(0), 0])
         GameEngine.scene.push(camera);
 
-        const newPointLight: PointLight = new PointLight()
+        camera.addComponent(PointLight);
 
         shadowMapping = new ShadowMapping();
 

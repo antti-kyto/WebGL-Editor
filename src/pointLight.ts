@@ -11,11 +11,15 @@ export class PointLight extends Component {
     quadratic: number = 0.035
 
     ambient: vec3 = [0, 0, 0]
-    diffuse: vec3 = [1, 1, 0.1]
-    specular: vec3 = [1, 1, 0.1]
+    diffuse: vec3 = [1, 1, 1]
+    specular: vec3 = [1, 1, 1]
 
     constructor(gameObject: GameObject = null) {
         super(gameObject)
         GameEngine.pointLights.push(this)
+    }
+
+    update(): void {
+        this.position = this.gameObject.transform.position
     }
 }

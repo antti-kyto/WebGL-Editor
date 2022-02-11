@@ -288,10 +288,10 @@ export class GameEngine {
             [.00, .00, .00]);
         GameEngine.gl.uniform3fv(
             this.programInfo.uniformLocations.dirLightDiffuse,
-            [0.3, 0.3, .4]);
+            [0.9, 0.9, .9]);
         GameEngine.gl.uniform3fv(
             this.programInfo.uniformLocations.dirLightSpecular,
-            [1, 1, 1]);
+            [.3, .3, .3]);
         GameEngine.gl.uniformMatrix4fv(
             this.programInfo.uniformLocations.lightSpaceMatrix,
             false,

@@ -2,6 +2,7 @@ import { vec3 } from "gl-matrix";
 import { Time } from "./time";
 import { Component } from "./componentBase";
 import { GameObject } from "./gameObject";
+import { Simulation } from "./simulation";
 
 export class FreeLook extends Component {
 
@@ -63,10 +64,10 @@ export class FreeLook extends Component {
             vec3.add(moveDir, moveDir, cameraRight)
         }
         if (this.eDown) {
-            vec3.add(moveDir, moveDir, [0,1,0])
+            vec3.add(moveDir, moveDir, [0, 1, 0])
         }
         if (this.qDown) {
-            vec3.add(moveDir, moveDir, [0,-1,0])
+            vec3.add(moveDir, moveDir, [0, -1, 0])
         }
 
         vec3.normalize(moveDir, moveDir)
@@ -105,6 +106,9 @@ export class FreeLook extends Component {
                 break
             case "q":
                 this.qDown = true
+                break
+            case "k":
+                Simulation.move = !Simulation.move 
                 break
         }
     }

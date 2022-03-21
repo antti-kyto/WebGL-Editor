@@ -13,9 +13,9 @@ export class GameEngine {
     static scene: Array<GameObject> = []
     static pointLights: Array<PointLight> = []
     static buffers: Buffers = new Buffers()
+    static readyToRender: boolean = false
     canvas: any
 
-    readyToRender: boolean = false
     meshList: any = []
     emptyTexture: any = null
     cameraScale: number = 0
@@ -99,7 +99,7 @@ export class GameEngine {
                 },
             };
 
-            this.readyToRender = true
+            GameEngine.readyToRender = true
         });
     }
 
@@ -231,7 +231,7 @@ export class GameEngine {
 
         GameEngine.gl.viewport(0, 0, this.canvas.width, this.canvas.height);
 
-        if (!this.readyToRender) {
+        if (!GameEngine.readyToRender) {
             console.log("Not Ready to Render")
             return
         }

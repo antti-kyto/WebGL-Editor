@@ -56,6 +56,7 @@ function update(gameEngine: GameEngine, time: number) {
 
     time *= 0.001;  // convert to seconds
     Time.deltaTime = time - then
+    Time.time += Time.deltaTime
     then = time;
 
     GameEngine.scene.forEach(gameObject => {

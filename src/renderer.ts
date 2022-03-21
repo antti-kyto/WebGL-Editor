@@ -6,7 +6,6 @@ import { Buffers } from './buffers';
 import { Camera } from './camera';
 
 import { vec3, mat4, quat } from 'gl-matrix';
-import { ShadowMapping } from './shadowMapping';
 
 export class GameEngine {
 
@@ -95,21 +94,8 @@ export class GameEngine {
                     modelMatrix: GameEngine.gl.getUniformLocation(this.shaderProgram, 'uModelMatrix'),
                     normalMatrix: GameEngine.gl.getUniformLocation(this.shaderProgram, 'uNormalMatrix'),
                     viewPos: GameEngine.gl.getUniformLocation(this.shaderProgram, 'uViewPos'),
-                    numPointLights: GameEngine.gl.getUniformLocation(this.shaderProgram, 'vNumPointLights'),
 
                     materialDiffuse: GameEngine.gl.getUniformLocation(this.shaderProgram, 'uMaterial.diffuse'),
-                    materialNormal: GameEngine.gl.getUniformLocation(this.shaderProgram, 'uMaterial.normal'),
-                    materialSpecular: GameEngine.gl.getUniformLocation(this.shaderProgram, 'uMaterial.specular'),
-                    materialShininess: GameEngine.gl.getUniformLocation(this.shaderProgram, 'uMaterial.shininess'),
-
-                    shadowMap: GameEngine.gl.getUniformLocation(this.shaderProgram, 'uShadowMap'),
-                    lightSpaceMatrix: GameEngine.gl.getUniformLocation(this.shaderProgram, 'uLightSpaceMatrix'),
-
-                    dirLightDirection: GameEngine.gl.getUniformLocation(this.shaderProgram, 'uDirLight.direction'),
-                    dirLightAmbient: GameEngine.gl.getUniformLocation(this.shaderProgram, 'uDirLight.ambient'),
-                    dirLightDiffuse: GameEngine.gl.getUniformLocation(this.shaderProgram, 'uDirLight.diffuse'),
-                    dirLightSpecular: GameEngine.gl.getUniformLocation(this.shaderProgram, 'uDirLight.specular')
-
                 },
             };
 
@@ -234,8 +220,8 @@ export class GameEngine {
         GameEngine.gl.blendFunc(GameEngine.gl.SRC_ALPHA, GameEngine.gl.ONE_MINUS_SRC_ALPHA);
         GameEngine.gl.depthFunc(GameEngine.gl.LEQUAL);            // Near things obscure far things
 
-        GameEngine.gl.enable(GameEngine.gl.CULL_FACE);
-        GameEngine.gl.cullFace(GameEngine.gl.BACK);
+        // GameEngine.gl.enable(GameEngine.gl.CULL_FACE);
+        // GameEngine.gl.cullFace(GameEngine.gl.BACK);
 
         // Clear the canvas before we start drawing on it.
         GameEngine.gl.clear(GameEngine.gl.COLOR_BUFFER_BIT | GameEngine.gl.DEPTH_BUFFER_BIT);
@@ -255,48 +241,6 @@ export class GameEngine {
         // Tell WebGL to use our program when drawing
         GameEngine.gl.useProgram(this.programInfo.program);
 
-        // THIS IS FOR POINT LIGHT
-        GameEngine.gl.uniform1i(
-            this.programInfo.uniformLocations.numPointLights,
-            GameEngine.pointLights.length);
-        for (let i = 0; i < GameEngine.pointLights.length; i++) {
-            const position = GameEngine.gl.getUniformLocation(this.shaderProgram, `uPointLights[${i}].position`)
-            const constant = GameEngine.gl.getUniformLocation(this.shaderProgram, `uPointLights[${i}].constant`)
-            const linear = GameEngine.gl.getUniformLocation(this.shaderProgram, `uPointLights[${i}].linear`)
-            const quadratic = GameEngine.gl.getUniformLocation(this.shaderProgram, `uPointLights[${i}].quadratic`)
-            const ambient = GameEngine.gl.getUniformLocation(this.shaderProgram, `uPointLights[${i}].ambient`)
-            const diffuse = GameEngine.gl.getUniformLocation(this.shaderProgram, `uPointLights[${i}].diffuse`)
-            const specular = GameEngine.gl.getUniformLocation(this.shaderProgram, `uPointLights[${i}].specular`)
-
-            GameEngine.gl.uniform3fv(position, GameEngine.pointLights[i].position);
-
-            GameEngine.gl.uniform1f(constant, GameEngine.pointLights[i].constant);
-            GameEngine.gl.uniform1f(linear, GameEngine.pointLights[i].linear);
-            GameEngine.gl.uniform1f(quadratic, GameEngine.pointLights[i].quadratic);
-
-            GameEngine.gl.uniform3fv(ambient, GameEngine.pointLights[i].ambient);
-            GameEngine.gl.uniform3fv(diffuse, GameEngine.pointLights[i].diffuse);
-            GameEngine.gl.uniform3fv(specular, GameEngine.pointLights[i].specular);
-        }
-
-        // Set Directional Lights
-        GameEngine.gl.uniform3fv(
-            this.programInfo.uniformLocations.dirLightDirection,
-            [1, 1, 0]);
-        GameEngine.gl.uniform3fv(
-            this.programInfo.uniformLocations.dirLightAmbient,
-            [.00, .00, .00]);
-        GameEngine.gl.uniform3fv(
-            this.programInfo.uniformLocations.dirLightDiffuse,
-            [0.9, 0.9, .9]);
-        GameEngine.gl.uniform3fv(
-            this.programInfo.uniformLocations.dirLightSpecular,
-            [.3, .3, .3]);
-        GameEngine.gl.uniformMatrix4fv(
-            this.programInfo.uniformLocations.lightSpaceMatrix,
-            false,
-            ShadowMapping.lightSpaceMatrix);
-
         this.clearCanvas()
 
         // Create a perspective matrix
@@ -307,15 +251,15 @@ export class GameEngine {
         const projectionMatrix: mat4 = mat4.create();
 
         //Perspective. Create ProjectionMatrix
-        mat4.perspective(projectionMatrix,
-            fieldOfView,
-            aspect,
-            zNear,
-            zFar);
+        // mat4.perspective(projectionMatrix,
+        //     fieldOfView,
+        //     aspect,
+        //     zNear,
+        //     zFar);
 
         // Orthographic
-        // mat4.ortho(projectionMatrix, this.canvas.width, -this.canvas.width, this.canvas.height, -this.canvas.height, 0.1, 100);
-        // mat4.scale(projectionMatrix, projectionMatrix, [this.cameraScale, this.cameraScale, 1])
+        mat4.ortho(projectionMatrix, this.canvas.width, -this.canvas.width, this.canvas.height, -this.canvas.height, 0.1, 100);
+        mat4.scale(projectionMatrix, projectionMatrix, [this.cameraScale, this.cameraScale, 1])
 
         // Calculate View (Camera) matrix
         const cameraFront: vec3 = [0, 0, 0]
@@ -329,6 +273,96 @@ export class GameEngine {
             Camera.camera.transform.position,
             vec3.add(vec3.create(), Camera.camera.transform.position, cameraFront),
             [0, 1, 0])
+
+        // Tell WebGL how to pull out the positions from the position buffer
+        {
+            const numComponents: number = 3;  // pull out 2 values per iteration
+            const type: any = GameEngine.gl.FLOAT;    // the data in the buffer is 32bit floats
+            const normalize: boolean = false;  // don't normalize
+            const stride: number = 0;         // how many bytes to get from one set of values to the next
+            const offset: number = 0;         // how many bytes inside the buffer to start from
+            GameEngine.gl.bindBuffer(GameEngine.gl.ARRAY_BUFFER, GameEngine.buffers.position);
+            GameEngine.gl.vertexAttribPointer(
+                this.programInfo.attribLocations.vertexPosition,
+                numComponents,
+                type,
+                normalize,
+                stride,
+                offset);
+            GameEngine.gl.enableVertexAttribArray(
+                this.programInfo.attribLocations.vertexPosition);
+        }
+
+        // Tell WebGL how to pull out the normals from
+        // the normal buffer into the vertexNormal attribute.
+        {
+            const numComponents = 3;
+            const type = GameEngine.gl.FLOAT;
+            const normalize = false;
+            const stride = 0;
+            const offset = 0;
+            GameEngine.gl.bindBuffer(GameEngine.gl.ARRAY_BUFFER, GameEngine.buffers.normal);
+            GameEngine.gl.vertexAttribPointer(
+                this.programInfo.attribLocations.vertexNormal,
+                numComponents,
+                type,
+                normalize,
+                stride,
+                offset);
+            GameEngine.gl.enableVertexAttribArray(
+                this.programInfo.attribLocations.vertexNormal);
+        }
+
+        // Tell WebGL how to pull out the normals from
+        // the normal buffer into the vertexNormal attribute.
+        {
+            const numComponents = 4;
+            const type = GameEngine.gl.FLOAT;
+            const normalize = false;
+            const stride = 0;
+            const offset = 0;
+            GameEngine.gl.bindBuffer(GameEngine.gl.ARRAY_BUFFER, GameEngine.buffers.tangent);
+            GameEngine.gl.vertexAttribPointer(
+                this.programInfo.attribLocations.vertexTangent,
+                numComponents,
+                type,
+                normalize,
+                stride,
+                offset);
+            GameEngine.gl.enableVertexAttribArray(
+                this.programInfo.attribLocations.vertexTangent);
+        }
+
+        // Tell WebGL how to pull out the vertexColor from the vertexColor buffer
+        {
+            const numComponents: number = 4;  // pull out 2 values per iteration
+            const type: any = GameEngine.gl.FLOAT;    // the data in the buffer is 32bit floats
+            const normalize: boolean = false;  // don't normalize
+            const stride: number = 0;         // how many bytes to get from one set of values to the next
+            const offset: number = 0;         // how many bytes inside the buffer to start from
+            GameEngine.gl.bindBuffer(GameEngine.gl.ARRAY_BUFFER, GameEngine.buffers.vertexColors);
+            GameEngine.gl.vertexAttribPointer(
+                this.programInfo.attribLocations.vertexColor,
+                numComponents,
+                type,
+                normalize,
+                stride,
+                offset);
+            GameEngine.gl.enableVertexAttribArray(
+                this.programInfo.attribLocations.vertexColor);
+        }
+
+        // tell webgl how to pull out the texture coordinates from buffer
+        {
+            const num: number = 2; // every coordinate composed of 2 values
+            const type: any = GameEngine.gl.FLOAT; // the data in the buffer is 32 bit float
+            const normalize: boolean = false; // don't normalize
+            const stride: number = 0; // how many bytes to get from one set to the next
+            const offset: number = 0; // how many bytes inside the buffer to start from
+            GameEngine.gl.bindBuffer(GameEngine.gl.ARRAY_BUFFER, GameEngine.buffers.textureCoord);
+            GameEngine.gl.vertexAttribPointer(this.programInfo.attribLocations.textureCoord, num, type, normalize, stride, offset);
+            GameEngine.gl.enableVertexAttribArray(this.programInfo.attribLocations.textureCoord);
+        }
 
         GameEngine.scene.forEach(element => {
 
@@ -354,96 +388,6 @@ export class GameEngine {
             mat4.mul(modelMatrix, translationMatrix, rotationMatrix)
             mat4.mul(modelMatrix, modelMatrix, scaleMatrix)
 
-            // Tell WebGL how to pull out the positions from the position buffer
-            {
-                const numComponents: number = 3;  // pull out 2 values per iteration
-                const type: any = GameEngine.gl.FLOAT;    // the data in the buffer is 32bit floats
-                const normalize: boolean = false;  // don't normalize
-                const stride: number = 0;         // how many bytes to get from one set of values to the next
-                const offset: number = 0;         // how many bytes inside the buffer to start from
-                GameEngine.gl.bindBuffer(GameEngine.gl.ARRAY_BUFFER, GameEngine.buffers.position);
-                GameEngine.gl.vertexAttribPointer(
-                    this.programInfo.attribLocations.vertexPosition,
-                    numComponents,
-                    type,
-                    normalize,
-                    stride,
-                    offset);
-                GameEngine.gl.enableVertexAttribArray(
-                    this.programInfo.attribLocations.vertexPosition);
-            }
-
-            // Tell WebGL how to pull out the normals from
-            // the normal buffer into the vertexNormal attribute.
-            {
-                const numComponents = 3;
-                const type = GameEngine.gl.FLOAT;
-                const normalize = false;
-                const stride = 0;
-                const offset = 0;
-                GameEngine.gl.bindBuffer(GameEngine.gl.ARRAY_BUFFER, GameEngine.buffers.normal);
-                GameEngine.gl.vertexAttribPointer(
-                    this.programInfo.attribLocations.vertexNormal,
-                    numComponents,
-                    type,
-                    normalize,
-                    stride,
-                    offset);
-                GameEngine.gl.enableVertexAttribArray(
-                    this.programInfo.attribLocations.vertexNormal);
-            }
-
-            // Tell WebGL how to pull out the normals from
-            // the normal buffer into the vertexNormal attribute.
-            {
-                const numComponents = 4;
-                const type = GameEngine.gl.FLOAT;
-                const normalize = false;
-                const stride = 0;
-                const offset = 0;
-                GameEngine.gl.bindBuffer(GameEngine.gl.ARRAY_BUFFER, GameEngine.buffers.tangent);
-                GameEngine.gl.vertexAttribPointer(
-                    this.programInfo.attribLocations.vertexTangent,
-                    numComponents,
-                    type,
-                    normalize,
-                    stride,
-                    offset);
-                GameEngine.gl.enableVertexAttribArray(
-                    this.programInfo.attribLocations.vertexTangent);
-            }
-
-            // Tell WebGL how to pull out the vertexColor from the vertexColor buffer
-            {
-                const numComponents: number = 4;  // pull out 2 values per iteration
-                const type: any = GameEngine.gl.FLOAT;    // the data in the buffer is 32bit floats
-                const normalize: boolean = false;  // don't normalize
-                const stride: number = 0;         // how many bytes to get from one set of values to the next
-                const offset: number = 0;         // how many bytes inside the buffer to start from
-                GameEngine.gl.bindBuffer(GameEngine.gl.ARRAY_BUFFER, GameEngine.buffers.vertexColors);
-                GameEngine.gl.vertexAttribPointer(
-                    this.programInfo.attribLocations.vertexColor,
-                    numComponents,
-                    type,
-                    normalize,
-                    stride,
-                    offset);
-                GameEngine.gl.enableVertexAttribArray(
-                    this.programInfo.attribLocations.vertexColor);
-            }
-
-            // tell webgl how to pull out the texture coordinates from buffer
-            {
-                const num: number = 2; // every coordinate composed of 2 values
-                const type: any = GameEngine.gl.FLOAT; // the data in the buffer is 32 bit float
-                const normalize: boolean = false; // don't normalize
-                const stride: number = 0; // how many bytes to get from one set to the next
-                const offset: number = 0; // how many bytes inside the buffer to start from
-                GameEngine.gl.bindBuffer(GameEngine.gl.ARRAY_BUFFER, GameEngine.buffers.textureCoord);
-                GameEngine.gl.vertexAttribPointer(this.programInfo.attribLocations.textureCoord, num, type, normalize, stride, offset);
-                GameEngine.gl.enableVertexAttribArray(this.programInfo.attribLocations.textureCoord);
-            }
-
             // Tell WebGL which indices to use to index the vertices
             GameEngine.gl.bindBuffer(GameEngine.gl.ELEMENT_ARRAY_BUFFER, GameEngine.buffers.indices);
 
@@ -451,25 +395,9 @@ export class GameEngine {
             // Bind the texture to texture unit 0
             // Tell the shader we bound the texture to texture unit 0
             GameEngine.gl.uniform1i(this.programInfo.uniformLocations.materialDiffuse, 0);
-            GameEngine.gl.uniform1i(this.programInfo.uniformLocations.materialNormal, 1);
-            GameEngine.gl.uniform1i(this.programInfo.uniformLocations.materialSpecular, 2);
-            GameEngine.gl.uniform1i(this.programInfo.uniformLocations.shadowMap, 3);
-
 
             GameEngine.gl.activeTexture(GameEngine.gl.TEXTURE0);
             GameEngine.gl.bindTexture(GameEngine.gl.TEXTURE_2D, element.material.diffuse);
-
-            GameEngine.gl.activeTexture(GameEngine.gl.TEXTURE1);
-            GameEngine.gl.bindTexture(GameEngine.gl.TEXTURE_2D, element.material.normalMap);
-
-            GameEngine.gl.activeTexture(GameEngine.gl.TEXTURE2);
-            GameEngine.gl.bindTexture(GameEngine.gl.TEXTURE_2D, element.material.specular);
-
-            GameEngine.gl.activeTexture(GameEngine.gl.TEXTURE3);
-            GameEngine.gl.bindTexture(GameEngine.gl.TEXTURE_2D, ShadowMapping.shadowMapTexture);
-
-            // TODO MATERIALS CLASS
-            GameEngine.gl.uniform1f(this.programInfo.uniformLocations.materialShininess, element.material.shininess);
 
             const normalMatrix = mat4.create();
             mat4.invert(normalMatrix, modelMatrix);

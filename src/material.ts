@@ -9,7 +9,7 @@ export class Material {
     shininess: number
 
     constructor(
-        diffuse: WebGLTexture = createSolidTexture(GameEngine.gl, new Uint8Array([255, 0, 0, 0])),
+        diffuse: WebGLTexture = createSolidTexture(GameEngine.gl, new Uint8Array([255, 255, 255, 255])),
         normalMap: WebGLTexture = createSolidTexture(GameEngine.gl, new Uint8Array([255/2, 255/2, 255, 0])),
         specular: WebGLTexture = createSolidTexture(GameEngine.gl, new Uint8Array([255, 255, 255, 255])),
         shininess: number = 24

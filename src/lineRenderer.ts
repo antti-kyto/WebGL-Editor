@@ -1,64 +1,90 @@
 import { Component } from "./componentBase"
-import { vec3 } from 'gl-matrix';
+import { GameEngine } from './renderer'
+import { vec2, vec3 } from 'gl-matrix';
 import { GameObject } from "./gameObject";
 
 export class LineRenderer extends Component {
 
+    gameObject: GameObject
+
+    point1: GameObject
+    point2: GameObject
     startPosition: vec3
     endPosition: vec3
-    width: number = 0.01
+    width: number = 1
 
-    constructor(gameEngine, start: vec3, end: vec3) {
+    constructor(gameEngine, start: GameObject, end: GameObject) {
         super()
 
-        this.startPosition = start
-        this.endPosition = end
+        this.point1 = start
+        this.point2 = end
+
+        this.startPosition = start.transform.position
+        this.endPosition = end.transform.position
 
         const lineDirection: vec3 = [0, 0, 0]
-        vec3.sub(lineDirection, end, start)
+        vec3.sub(lineDirection, this.endPosition, this.startPosition)
         vec3.normalize(lineDirection, lineDirection)
-        console.log(lineDirection)
 
-        const upDir: vec3 = Math.abs(lineDirection[0]) >= Math.abs(lineDirection[1]) ? [0, 1, 0] : [1, 0, 0]
-        console.log(upDir)
+        const lineCenter: vec3 = [0, 0, 0]
+        vec3.add(lineCenter,
+            this.startPosition,
+            this.endPosition
+        )
+        vec3.div(lineCenter,
+            lineCenter,
+            [2, 2, 2]
+        )
 
-        const right: vec3 = [0, 0, 0]
-        vec3.cross(right, lineDirection, upDir)
-        vec3.normalize(right, right)
+        this.gameObject = new GameObject(lineCenter, gameEngine.meshList["plane"])
+        this.gameObject.components.push(this)
 
-        const normalVector: vec3 = [0, 0, 0]
-        vec3.cross(normalVector, right, lineDirection)
-        vec3.normalize(normalVector, normalVector)
+        const dist = vec3.dist(
+            this.startPosition,
+            this.endPosition
+        )
+        this.gameObject.transform.scale = [1, 1, dist / 2]
 
-        const positions = [
-            start[0] + this.width / 2 * normalVector[0], start[1] + this.width / 2 * normalVector[1], 0,
-            start[0] + -this.width / 2 * normalVector[0], start[1] + -this.width / 2 * normalVector[1], 0,
-            end[0] + this.width / 2 * normalVector[0], end[1] + this.width / 2 * normalVector[1], 0,
-            end[0] + -this.width / 2 * normalVector[0], end[1] + -this.width / 2 * normalVector[1], 0,
-        ]
+        const angle = vec2.angle([0, 1], [lineDirection[0], lineDirection[1]])
+        if (lineDirection[0] > 0)
+            this.gameObject.transform.rotation = [90, 0, (180 / Math.PI) * -angle]
+        else
+            this.gameObject.transform.rotation = [90, 0, (180 / Math.PI) * angle]
+        GameEngine.scene.push(this.gameObject)
+        // GameEngine.scene.push(line)
+    }
 
-        const normals = [
-            0, 0, -1,
-            0, 0, -1,
-            0, 0, -1,
-            0, 0, -1,
-        ]
+    update(): void {
+        if (!this.point1 || !this.point2)
+            return
+        this.startPosition = this.point1.transform.position
+        this.endPosition = this.point2.transform.position
 
-        const indices = [
-            0, 1, 2,
-            1, 3, 2
-        ]
+        const lineDirection: vec3 = [0, 0, 0]
+        vec3.sub(lineDirection, this.endPosition, this.startPosition)
+        vec3.normalize(lineDirection, lineDirection)
 
-        const lineName: string = gameEngine.meshList.length.toString()
-        gameEngine.costructBufferDatas(
-            lineName,
-            positions,
-            normals,
-            [],
-            [],
-            indices)
+        const lineCenter: vec3 = [0, 0, 0]
+        vec3.add(lineCenter,
+            this.startPosition,
+            this.endPosition
+        )
+        vec3.div(lineCenter,
+            lineCenter,
+            [2, 2, 2]
+        )
 
-        const line: GameObject = new GameObject([-0, 0, 0], gameEngine.meshList[lineName])
-        gameEngine.scene.push(line)
+        const dist = vec3.dist(
+            this.startPosition,
+            this.endPosition
+        )
+        this.gameObject.transform.position = lineCenter
+        this.gameObject.transform.scale = [1, 1, dist / 2]
+
+        const angle = vec2.angle([0, 1], [lineDirection[0], lineDirection[1]])
+        if (lineDirection[0] > 0)
+            this.gameObject.transform.rotation = [90, 0, (180 / Math.PI) * -angle]
+        else
+            this.gameObject.transform.rotation = [90, 0, (180 / Math.PI) * angle]
     }
 }

@@ -38,7 +38,7 @@ function main() {
     let sO: GameObject = new GameObject([0, -1, 0], gameEngine.meshList["plane"], mat)
     sO.transform.translate([0, 0, 0])
     sO.transform.rotation = [-90, 0, 0]
-    sO.transform.scale = [1, 1, 1]
+    sO.transform.scale = [15, 15, 15]
     GameEngine.scene.push(sO)
 
     let simulationO: GameObject = new GameObject([0, 0, 0])
@@ -56,8 +56,8 @@ function update(gameEngine: GameEngine, time: number) {
 
     time *= 0.001;  // convert to seconds
     Time.deltaTime = time - then
-    Time.time += Time.deltaTime
     then = time;
+    Time.time += Time.deltaTime
 
     GameEngine.scene.forEach(gameObject => {
         // gameObject.transform.rotate([Time.deltaTime*1, 0, 0])

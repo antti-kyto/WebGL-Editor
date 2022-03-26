@@ -4,10 +4,10 @@ import { LineRenderer } from './lineRenderer';
 import { GameEngine } from './renderer'
 import { GameObject } from './gameObject'
 import { Time } from './time'
+import { Ball } from "./ball";
 
 
 class Point {
-
     gameObject: GameObject
     position: vec2
     prevPosition: vec2
@@ -18,7 +18,7 @@ class Point {
         this.prevPosition = position
 
         this.gameObject = new GameObject([position[0], position[1], 0], gameEngine.meshList["plane"])
-        this.gameObject.transform.scale = [0.1, 0.1, 0.1]
+        this.gameObject.transform.scale = [0.8, 0.8, 0.8]
         this.gameObject.transform.rotation = [-90, 0, 0]
         GameEngine.scene.push(this.gameObject)
         Simulation.points.push(this)
@@ -50,8 +50,11 @@ class Stick {
 export class Simulation extends Component {
 
     static points: Array<Point> = []
+    pointsBallCollision: Array<Point> = []
+
     static sticks: Array<Stick> = []
     static move: boolean
+    static ball: GameObject
 
     frame = 0
 
@@ -73,6 +76,7 @@ export class Simulation extends Component {
         const point7 = new Point(gameEngine, [0, -8])
         const point8 = new Point(gameEngine, [0, -15])
         const point9 = new Point(gameEngine, [0, -23])
+        this.pointsBallCollision.push(point9)
 
         const point10 = new Point(gameEngine, [-5.5, -10.5])
         const point11 = new Point(gameEngine, [5.5, -10.5])
@@ -84,15 +88,22 @@ export class Simulation extends Component {
         const point15 = new Point(gameEngine, [-11.5, -11])
         const point16 = new Point(gameEngine, [-10, -16])
         const point17 = new Point(gameEngine, [-8, -25])
+        this.pointsBallCollision.push(point14)
+        this.pointsBallCollision.push(point15)
+        this.pointsBallCollision.push(point16)
+        this.pointsBallCollision.push(point17)
 
         const point18 = new Point(gameEngine, [13, -7])
         const point19 = new Point(gameEngine, [11.5, -11])
         const point20 = new Point(gameEngine, [10, -16])
         const point21 = new Point(gameEngine, [8, -25])
+        this.pointsBallCollision.push(point18)
+        this.pointsBallCollision.push(point19)
+        this.pointsBallCollision.push(point20)
+        this.pointsBallCollision.push(point21)
 
         const point22 = new Point(gameEngine, [-10, -8])
         const point23 = new Point(gameEngine, [10, -8])
-
 
         new Stick(gameEngine, point1, point5)
         new Stick(gameEngine, point5, point7)
@@ -135,13 +146,20 @@ export class Simulation extends Component {
         // this.sticks.push(stick3)
     }
 
+    start(): void {
+        console.log("jou?")
+        Simulation.points[0].gameObject.transform.position = [-8, 40, 0]
+        Simulation.points[1].gameObject.transform.position = [8, 40, 0]
+        Simulation.points[2].gameObject.transform.position = [-15, 40, 0]
+        Simulation.points[3].gameObject.transform.position = [15, 40, 0]
+    }
+
     update(): void {
 
         if (!GameEngine.readyToRender)
             return
 
         if (Simulation.move) {
-
             for (let i: number = 0; i < 4; i++) {
                 const pos: vec3 = [0, 0, 0]
                 vec3.add(
@@ -174,11 +192,28 @@ export class Simulation extends Component {
                 point.gameObject.transform.position,
                 [
                     0,
-                    -9 * Time.deltaTime,
+                    -6 * Time.deltaTime,
                     0
                 ]
             )
             point.prevPosition = [prevPosition[0], prevPosition[1]]
+        })
+
+        this.pointsBallCollision.forEach(point => {
+            if (point.locked) {
+                return
+            }
+            const dist = Math.abs(vec3.dist(point.gameObject.transform.position, Simulation.ball.transform.position))
+            if(dist < Simulation.ball.transform.scale[0]){
+                const dir: vec3 = [0,0,0];
+                vec3.sub(dir, point.gameObject.transform.position, Simulation.ball.transform.position)
+                vec3.normalize(dir, dir)
+
+                const newPos: vec3 = [Simulation.ball.transform.position[0],Simulation.ball.transform.position[1], Simulation.ball.transform.position[2]];
+                const newPosHelper: vec3 = [Simulation.ball.transform.scale[0]*dir[0],Simulation.ball.transform.scale[1]*dir[1], Simulation.ball.transform.scale[2]*dir[2]];
+                vec3.add(newPos,newPos,newPosHelper)
+                point.gameObject.transform.position = newPos
+            }
         })
 
         for (let i: number = 0; i < 1; i++) {

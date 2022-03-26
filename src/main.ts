@@ -8,7 +8,7 @@ import { GLTFLoader } from '@loaders.gl/gltf';
 
 import { loadTexture } from './util'
 import { Camera } from './camera';
-import { FreeLook } from './freelook';
+import { Ball } from './ball';
 import { Time } from './time';
 import { Simulation } from './simulation';
 import { glMatrix, vec3 } from 'gl-matrix';
@@ -28,7 +28,6 @@ function main() {
     const camera: GameObject = new GameObject([0, 0, 10]);
     camera.transform.rotation = [0,glMatrix.toRadian(180),0]
     camera.addComponent(Camera);
-    camera.addComponent(FreeLook);
     Camera.camera = camera;
     GameEngine.scene.push(camera);
 
@@ -38,18 +37,28 @@ function main() {
     let sO: GameObject = new GameObject([0, -1, 0], gameEngine.meshList["plane"], mat)
     sO.transform.translate([0, 0, 0])
     sO.transform.rotation = [-90, 0, 0]
-    sO.transform.scale = [15, 15, 15]
+    sO.transform.scale = [12, 12, 12]
+    sO.addComponent(Ball)
     GameEngine.scene.push(sO)
 
     let simulationO: GameObject = new GameObject([0, 0, 0])
     simulationO.components.push(new Simulation(gameEngine))
-
+    Simulation.ball = sO
     GameEngine.scene.push(simulationO)
-    
 
     gameEngine.initBuffers()
 
+    start()
     requestAnimationFrame((time) => update(gameEngine, time));
+}
+
+function start()
+{
+    GameEngine.scene.forEach(gameObject => {
+        gameObject.components.forEach(component => {
+            component.start()
+        })
+    });
 }
 
 function update(gameEngine: GameEngine, time: number) {
